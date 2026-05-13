@@ -1,32 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
-interface SplashScreenProps {
-  onDone: () => void;
-}
-
-export default function SplashScreen({ onDone }: SplashScreenProps) {
-  const [fadeOut, setFadeOut] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setFadeOut(true), 5000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (fadeOut) {
-      const timer = setTimeout(onDone, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [fadeOut, onDone]);
-
+export default function OnboardingScreen() {
   return (
     <div
-      onClick={() => setFadeOut(true)}
-      className={`fixed inset-0 z-50 flex flex-col items-center bg-[#F8F9FA] transition-opacity duration-500 ${
-        fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
-      }`}
+      className="fixed inset-0 z-50 flex flex-col items-center bg-[#F8F9FA] overflow-y-auto"
       style={{
         backgroundImage: `
           linear-gradient(rgba(230,57,70,.03) 1px, transparent 1px),
@@ -81,7 +60,7 @@ export default function SplashScreen({ onDone }: SplashScreenProps) {
       </div>
 
       {/* 中间卡片 */}
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center py-8">
         <div className="relative w-[280px] animate-float">
           <div className="absolute -inset-16 bg-brand/10 rounded-full blur-[80px] opacity-60" />
           <div className="relative bg-white p-3 rounded-[40px] border-4 border-white overflow-hidden aspect-[4/5] shadow-[0_20px_50px_rgba(0,0,0,0.08)]">
@@ -92,16 +71,15 @@ export default function SplashScreen({ onDone }: SplashScreenProps) {
         </div>
       </div>
 
-      {/* 跳过按钮 */}
-      <button
-        onClick={() => setFadeOut(true)}
-        className="mb-2 px-6 py-2 text-sm text-brand font-medium active:text-red-800 transition-colors"
-      >
-        生成腹肌
-      </button>
-
       {/* 底部 slogan */}
-      <div className="pb-14 flex flex-col items-center">
+      <div className="pb-8 flex flex-col items-center">
+        <Link
+          href="/settings"
+          className="mb-6 px-8 py-3 text-sm font-bold text-brand active:text-red-800 transition-colors"
+        >
+          生成腹肌
+        </Link>
+
         <div className="relative">
           <div className="absolute inset-0 bg-[#E63946] blur-xl opacity-20" />
           <div className="relative bg-[#1A1A1A] px-8 py-4 rounded-2xl border-b-4 border-r-4 border-[#E63946]">
@@ -110,7 +88,7 @@ export default function SplashScreen({ onDone }: SplashScreenProps) {
             </p>
           </div>
         </div>
-        <div className="mt-8 flex items-center gap-4 opacity-30">
+        <div className="mt-6 flex items-center gap-4 opacity-30">
           <div className="h-px w-8 bg-gray-400" />
           <span
             className="text-[9px] font-black tracking-widest text-gray-500 uppercase"
