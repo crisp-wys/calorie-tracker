@@ -41,7 +41,7 @@ export default function CameraPage() {
     setError(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_SCF_URL || '/api/vision';
+      const apiUrl = process.env.NEXT_PUBLIC_SCF_URL || 'https://calorie-vision-wkllwsxbqi.cn-hangzhou.fcapp.run';
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
