@@ -36,30 +36,36 @@ const SYSTEM_PROMPT = `你是一名专业的营养分析师，擅长识别中餐
   "totalCaloriesMax": 500
 }`;
 
-exports.main_handler = async (event, context) => {
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
+}
+
+function jsonResp(resp, statusCode, body) {
+  resp.setStatusCode(statusCode);
+  resp.setHeader('Content-Type', 'application/json');
+  Object.entries(corsHeaders()).forEach(([k, v]) => resp.setHeader(k, v));
+  resp.send(JSON.stringify(body));
+}
+
+module.exports.handler = async (req, resp, context) => {
   // CORS preflight
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      },
-      body: '',
-    };
+  if (req.method === 'OPTIONS') {
+    resp.setStatusCode(200);
+    Object.entries(corsHeaders()).forEach(([k, v]) => resp.setHeader(k, v));
+    resp.send('');
+    return;
   }
 
   try {
-    const body = JSON.parse(event.body);
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
     const { image } = body;
 
     if (!image || typeof image !== 'string') {
-      return {
-        statusCode: 400,
-        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: '缺少图片数据' }),
-      };
+      return jsonResp(resp, 400, { error: '缺少图片数据' });
     }
 
     const controller = new AbortController();
@@ -92,11 +98,7 @@ exports.main_handler = async (event, context) => {
     clearTimeout(timeout);
 
     if (!response.ok) {
-      return {
-        statusCode: 502,
-        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: `API 调用失败: ${response.status}` }),
-      };
+      return jsonResp(resp, 502, { error: `API 调用失败: ${response.status}` });
     }
 
     const data = await response.json();
@@ -104,40 +106,20 @@ exports.main_handler = async (event, context) => {
 
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      return {
-        statusCode: 422,
-        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: '未识别到食物，请重新拍摄' }),
-      };
+      return jsonResp(resp, 422, { error: '未识别到食物，请重新拍摄' });
     }
 
     const result = JSON.parse(jsonMatch[0]);
 
     if (!result.foods || result.foods.length === 0) {
-      return {
-        statusCode: 422,
-        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: '未识别到食物，请重新拍摄' }),
-      };
+      return jsonResp(resp, 422, { error: '未识别到食物，请重新拍摄' });
     }
 
-    return {
-      statusCode: 200,
-      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-      body: JSON.stringify(result),
-    };
+    return jsonResp(resp, 200, result);
   } catch (error) {
     if (error.name === 'AbortError') {
-      return {
-        statusCode: 504,
-        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: '识别超时，请稍后重试' }),
-      };
+      return jsonResp(resp, 504, { error: '识别超时，请稍后重试' });
     }
-    return {
-      statusCode: 500,
-      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: '识别结果异常，请重试' }),
-    };
+    return jsonResp(resp, 500, { error: '识别结果异常，请重试' });
   }
 };
