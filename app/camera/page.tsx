@@ -102,7 +102,7 @@ export default function CameraPage() {
         <p className="text-sm text-gray-500 text-center">请先在设置中填写个人代谢画像</p>
         <button
           onClick={() => router.push('/settings')}
-          className="rounded-xl bg-green-500 px-6 py-2 text-sm font-medium text-white"
+          className="rounded-xl bg-brand px-6 py-2 text-sm font-medium text-white shadow-md shadow-brand/20 transition-all active:shadow-sm active:brightness-90"
         >
           前往设置
         </button>
@@ -111,8 +111,8 @@ export default function CameraPage() {
   }
 
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="text-lg font-bold">拍照识别</h1>
+    <div className="px-4 pt-6 pb-4 space-y-4">
+      <h1 className="text-xl font-extrabold">拍照识别</h1>
 
       {!result && !error && (
         <PhotoCapture onCapture={handleCapture} loading={loading} />
@@ -151,20 +151,20 @@ export default function CameraPage() {
             ))}
           </div>
 
-          <div className="rounded-xl bg-green-50 p-3 text-center text-sm text-green-700 font-medium">
+          <div className="rounded-xl bg-brand/10 p-3 text-center text-sm text-brand font-medium">
             本餐合计: {result.totalCaloriesMin}-{result.totalCaloriesMax} kcal
           </div>
 
           <div className="flex gap-3">
             <button
               onClick={handleConfirm}
-              className="flex-1 rounded-xl bg-green-500 p-3 font-bold text-white transition-colors active:bg-green-600"
+              className="flex-1 rounded-2xl bg-brand p-4 font-bold text-white shadow-md shadow-brand/20 transition-all active:shadow-sm active:brightness-90"
             >
               确认记录
             </button>
             <button
               onClick={handleReset}
-              className="rounded-xl border border-gray-200 bg-white p-3 text-sm text-gray-500"
+              className="rounded-xl border border-gray-200 bg-white p-3 text-sm text-gray-500 transition-colors hover:border-gray-300 hover:text-gray-600"
             >
               重新拍摄
             </button>

@@ -25,7 +25,7 @@ export default function PhotoCapture({ onCapture, loading }: PhotoCaptureProps) 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 space-y-4">
-        <Loader2 className="h-10 w-10 animate-spin text-green-500" />
+        <Loader2 className="h-10 w-10 animate-spin text-brand" />
         <p className="text-sm text-gray-400">AI 正在识别中…</p>
       </div>
     );
@@ -35,7 +35,7 @@ export default function PhotoCapture({ onCapture, loading }: PhotoCaptureProps) 
     <div className="flex flex-col items-center py-20 space-y-4">
       <button
         onClick={() => inputRef.current?.click()}
-        className="flex h-20 w-20 items-center justify-center rounded-full bg-green-500 text-white shadow-lg transition-transform active:scale-95"
+        className="flex h-20 w-20 items-center justify-center rounded-full bg-brand text-white shadow-lg shadow-brand/25 transition-all active:scale-95 active:shadow-md"
       >
         <Camera className="h-10 w-10" />
       </button>

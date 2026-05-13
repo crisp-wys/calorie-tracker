@@ -1,27 +1,32 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useApp } from '@/lib/AppContext';
 import { type MealType } from '@/lib/types';
 import RingProgress from '@/components/RingProgress';
 import MacroBars from '@/components/MacroBar';
 import MealSection from '@/components/MealSection';
+import SplashScreen from '@/components/SplashScreen';
 
 const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 
 export default function DashboardPage() {
   const { state } = useApp();
   const { profile, meals } = state;
+  const [splashDone, setSplashDone] = useState(false);
 
   if (!profile) {
+    if (!splashDone) {
+      return <SplashScreen onDone={() => setSplashDone(true)} />;
+    }
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4 space-y-4">
-        <h1 className="text-lg font-bold">Calorie Tracker</h1>
-        <p className="text-sm text-gray-400 text-center">AI 驱动的减脂饮食追踪工具</p>
+        <h1 className="text-lg font-bold">这顿不算</h1>
+        <p className="text-sm text-gray-400 text-center">拍照识别热量，吃了再说</p>
         <p className="text-xs text-gray-300 text-center">请先设置你的个人代谢画像以开始使用</p>
         <a
           href="/settings"
-          className="rounded-xl bg-green-500 px-6 py-2 text-sm font-medium text-white"
+          className="rounded-xl bg-brand px-6 py-2 text-sm font-medium text-white"
         >
           开始设置
         </a>
@@ -63,14 +68,14 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="text-sm text-gray-400">{dateStr}</h1>
+    <div className="px-4 pt-6 pb-4 space-y-4">
+      <h1 className="text-sm text-gray-400 tracking-wide">{dateStr}</h1>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center pt-2 pb-2">
         <RingProgress current={roundedCalories} target={dailyTarget} />
       </div>
 
-      <div className="rounded-xl bg-white p-4 shadow-sm">
+      <div className="rounded-2xl bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
         <MacroBars
           protein={macros.protein}
           proteinTarget={proteinTarget}

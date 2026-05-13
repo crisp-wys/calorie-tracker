@@ -48,16 +48,16 @@ export default function CalendarGrid({ year, month, dateMeals, selectedDate, onS
                   onClick={() => onSelect(dateStr)}
                   className={`relative py-1.5 text-sm rounded-lg transition-colors ${
                     isSelected
-                      ? 'bg-green-500 text-white'
+                      ? 'bg-brand text-white shadow-sm'
                       : isToday
-                      ? 'bg-green-100 text-green-700'
+                      ? 'bg-brand/10 text-brand font-semibold'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
                   {day}
                   {hasMeals && (
                     <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full ${
-                      isSelected ? 'bg-white' : 'bg-green-500'
+                      isSelected ? 'bg-white' : 'bg-brand/70'
                     }`} />
                   )}
                 </button>

@@ -26,7 +26,7 @@ export default function MealSection({ mealType, meals, date }: MealSectionProps)
   };
 
   return (
-    <div className="rounded-xl bg-white shadow-sm">
+    <div className="rounded-2xl bg-white shadow-[0_1px_8px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
       <button
         onClick={() => !emptyMeal && setExpanded(!expanded)}
         className="flex w-full items-center justify-between p-4"

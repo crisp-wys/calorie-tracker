@@ -23,7 +23,7 @@ export default function FoodCard({ food, mealId, readonly = false }: FoodCardPro
 
   if (!editing) {
     return (
-      <div className="rounded-lg border border-gray-100 p-3 text-sm group">
+      <div className="rounded-lg border border-gray-100 bg-white p-3 text-sm group hover:border-gray-200 transition-colors">
         <div className="flex items-center justify-between">
           <span className="font-medium">{food.name}</span>
           <div className="flex items-center gap-2">
@@ -49,7 +49,7 @@ export default function FoodCard({ food, mealId, readonly = false }: FoodCardPro
   }
 
   return (
-    <div className="rounded-lg border-2 border-green-300 bg-green-50/50 p-3 text-sm space-y-2">
+    <div className="rounded-lg border-2 border-brand/30 bg-brand/5 p-3 text-sm space-y-2">
       <div className="flex gap-2">
         <div className="flex-1">
           <label className="text-xs text-gray-400">菜名</label>
@@ -121,7 +121,7 @@ export default function FoodCard({ food, mealId, readonly = false }: FoodCardPro
       <div className="flex gap-2">
         <button
           onClick={handleSave}
-          className="flex-1 rounded bg-green-500 py-1.5 text-xs font-medium text-white"
+          className="flex-1 rounded bg-brand py-1.5 text-xs font-medium text-white"
         >
           确认
         </button>

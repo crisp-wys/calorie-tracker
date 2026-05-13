@@ -50,8 +50,8 @@ export default function CalendarPage() {
   const monthName = `${viewYear}年 ${viewMonth + 1}月`;
 
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="text-lg font-bold">饮食日历</h1>
+    <div className="px-4 pt-6 pb-4 space-y-4">
+      <h1 className="text-xl font-extrabold">饮食日历</h1>
 
       <div className="flex items-center justify-between">
         <button onClick={prevMonth} className="p-1 text-gray-500">
@@ -71,13 +71,13 @@ export default function CalendarPage() {
         onSelect={setSelected}
       />
 
-      <div className="rounded-xl bg-white p-4 shadow-sm">
+      <div className="rounded-2xl bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
         <div className="text-sm text-gray-500">{selected}</div>
         <div className="mt-1 flex items-baseline gap-2">
           <span className="text-xl font-bold tabular-nums">{selectedCalories}</span>
           <span className="text-sm text-gray-400">/ {target} kcal</span>
         </div>
-        <div className={`mt-1 text-sm ${isOver ? 'text-red-500' : 'text-green-500'}`}>
+        <div className={`mt-1 text-sm ${isOver ? 'text-red-500' : 'text-brand'}`}>
           {selectedCalories === 0
             ? selected === todayStr
               ? '暂无记录'

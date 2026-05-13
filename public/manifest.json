@@ -1,12 +1,12 @@
 {
-  "name": "Calorie Tracker",
-  "short_name": "CalTrack",
-  "description": "AI 减脂饮食追踪",
+  "name": "这顿不算",
+  "short_name": "这顿不算",
+  "description": "拍照识别热量，吃了再说",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f9fafb",
-  "theme_color": "#22c55e",
+  "background_color": "#F8F9FA",
+  "theme_color": "#E63946",
   "icons": [
     {
       "src": "/icon.svg",
