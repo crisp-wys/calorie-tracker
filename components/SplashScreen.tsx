@@ -10,7 +10,7 @@ export default function SplashScreen({ onDone }: SplashScreenProps) {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setFadeOut(true), 3000);
+    const timer = setTimeout(() => setFadeOut(true), 5000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -92,8 +92,16 @@ export default function SplashScreen({ onDone }: SplashScreenProps) {
         </div>
       </div>
 
+      {/* 跳过按钮 */}
+      <button
+        onClick={() => setFadeOut(true)}
+        className="mb-2 px-6 py-2 text-sm text-brand font-medium active:text-red-800 transition-colors"
+      >
+        生成腹肌
+      </button>
+
       {/* 底部 slogan */}
-      <div className="pb-20 flex flex-col items-center">
+      <div className="pb-14 flex flex-col items-center">
         <div className="relative">
           <div className="absolute inset-0 bg-[#E63946] blur-xl opacity-20" />
           <div className="relative bg-[#1A1A1A] px-8 py-4 rounded-2xl border-b-4 border-r-4 border-[#E63946]">
