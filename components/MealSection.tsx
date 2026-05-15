@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import type { MealRecord, MealType } from '@/lib/types';
 import { MEAL_LABELS } from '@/lib/types';
@@ -34,7 +35,12 @@ export default function MealSection({ mealType, meals, date }: MealSectionProps)
         <span className="font-medium text-sm">{MEAL_LABELS[mealType]}</span>
         <span className="text-sm text-gray-500">
           {emptyMeal ? (
-            <span className="text-gray-300">尚未记录</span>
+            <Link
+              href={`/camera?mealType=${mealType}`}
+              className="text-gray-300 hover:text-brand transition-colors"
+            >
+              尚未记录
+            </Link>
           ) : (
             <>
               {totalMin}-{totalMax} kcal
