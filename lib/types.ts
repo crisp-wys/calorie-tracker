@@ -88,3 +88,43 @@ export interface VisionFoodItem {
 export interface VisionResult {
   foods: VisionFoodItem[];
 }
+
+// ── AI 对话 ──
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  createdAt: string;
+}
+
+export type Personality = 'encouraging' | 'strict' | 'custom';
+
+export interface AIConfig {
+  name: string;
+  personality: Personality;
+  customPrompt: string;
+  avatar: string;
+}
+
+export interface MemoryInsight {
+  id: string;
+  type: 'pattern' | 'trend' | 'warning';
+  text: string;
+  createdAt: string;
+}
+
+export interface UserMemory {
+  aiConfig: AIConfig;
+  insights: MemoryInsight[];
+  preferences: string[];
+  milestones: { date: string; event: string }[];
+  lastSummaryDate: string | null;
+}
+
+export const DEFAULT_AI_CONFIG: AIConfig = {
+  name: 'AI 教练',
+  personality: 'encouraging',
+  customPrompt: '',
+  avatar: '',
+};
