@@ -15,11 +15,15 @@ interface NutritionData {
 }
 
 function findFood(name: string): NutritionData | null {
-  const key = Object.keys(foodDb).find(
-    (k) => name.includes(k) || k.includes(name)
-  );
+  const normalized = name.trim();
+  const db = foodDb as Record<string, NutritionData>;
+  // Exact match first
+  if (db[normalized]) return db[normalized];
+  // Then longest key contained in name (prefer longer matches to avoid "鸡" matching "鸡蛋")
+  const keys = Object.keys(db).sort((a, b) => b.length - a.length);
+  const key = keys.find((k) => normalized.includes(k));
   if (!key) return null;
-  return (foodDb as Record<string, NutritionData>)[key];
+  return db[key];
 }
 
 function calcDish(vf: VisionFoodItem): NutritionData {
@@ -94,13 +98,13 @@ function calcPackaged(vf: VisionFoodItem): NutritionData {
   if (!vf.nutritionLabel) return fallbackEstimate(vf);
 
   const label = vf.nutritionLabel;
-  const weight = vf.weight > 0 ? vf.weight / label.servingSize : 1;
+  const ratio = label.servingSize > 0 ? vf.weight / label.servingSize : 1;
 
   return {
-    protein: Math.round(label.protein * weight),
-    carbs: Math.round(label.carbs * weight),
-    fat: Math.round(label.fat * weight),
-    calories: Math.round(label.calories * weight),
+    protein: Math.round(label.protein * ratio),
+    carbs: Math.round(label.carbs * ratio),
+    fat: Math.round(label.fat * ratio),
+    calories: Math.round(label.calories * ratio),
   };
 }
 
