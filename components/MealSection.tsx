@@ -28,27 +28,26 @@ export default function MealSection({ mealType, meals, date }: MealSectionProps)
 
   return (
     <div className="rounded-2xl bg-white shadow-[0_1px_8px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
-      <button
-        onClick={() => !emptyMeal && setExpanded(!expanded)}
-        className="flex w-full items-center justify-between p-4"
-      >
-        <span className="font-medium text-sm">{MEAL_LABELS[mealType]}</span>
-        <span className="text-sm text-gray-500">
-          {emptyMeal ? (
-            <Link
-              href={`/camera?mealType=${mealType}`}
-              className="text-gray-300 hover:text-brand transition-colors"
-            >
-              尚未记录
-            </Link>
-          ) : (
-            <>
-              {totalMin}-{totalMax} kcal
-              <span className="ml-1 inline-block">{expanded ? <ChevronDown className="h-4 w-4 inline" /> : <ChevronRight className="h-4 w-4 inline" />}</span>
-            </>
-          )}
-        </span>
-      </button>
+      {emptyMeal ? (
+        <Link
+          href={`/camera?mealType=${mealType}`}
+          className="flex w-full items-center justify-between p-4"
+        >
+          <span className="font-medium text-sm">{MEAL_LABELS[mealType]}</span>
+          <span className="text-sm text-gray-300 hover:text-brand transition-colors">尚未记录</span>
+        </Link>
+      ) : (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex w-full items-center justify-between p-4"
+        >
+          <span className="font-medium text-sm">{MEAL_LABELS[mealType]}</span>
+          <span className="text-sm text-gray-500">
+            {totalMin}-{totalMax} kcal
+            <span className="ml-1 inline-block">{expanded ? <ChevronDown className="h-4 w-4 inline" /> : <ChevronRight className="h-4 w-4 inline" />}</span>
+          </span>
+        </button>
+      )}
 
       {expanded && (
         <div className="border-t border-gray-100 px-4 pb-4 space-y-3">
