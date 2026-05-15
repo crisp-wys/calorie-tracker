@@ -90,7 +90,7 @@ export default function CameraPage() {
     const food = {
       id: generateId(),
       name: manualForm.name.trim(),
-      weight: manualForm.weight || 100,
+      weight: manualForm.weight > 0 ? manualForm.weight : 100,
       caloriesMin: manualForm.calories,
       caloriesMax: manualForm.calories,
       protein: manualForm.protein || 0,
