@@ -7,33 +7,43 @@ const SYSTEM_PROMPT = `你是一名专业的营养分析师，擅长识别中餐
 请分析图片中的食物，对每道菜品输出以下信息：
 - name: 菜名（中文）
 - weight: 预估克数（g）
-- caloriesMin: 预估热量下限（kcal）
-- caloriesMax: 预估热量上限（kcal）
-- protein: 蛋白质含量（g）
-- carbs: 碳水化合物含量（g）
-- fat: 脂肪含量（g）
+- category: 食物类别
+  * "dish" — 烹饪菜品（炒菜、炖菜等）
+  * "ingredient" — 单一食材（米饭、鸡蛋、水果等）
+  * "beverage" — 饮品（奶茶、咖啡、果汁等）
+  * "packaged" — 包装食品（有营养成分表）
+- cookingMethod: 烹饪方式（仅 category=dish 时有效，其他为 null）
+  可选值: "steam" | "boil" | "stir-fry" | "deep-fry" | "roast" | "braise" | "cold" | "raw"
+- estimatedOil: 预估烹饪用油量（克），无油则为 0
+- size: 饮品杯型（仅 beverage，"small"|"medium"|"large"，其他为 null）
+- components: 饮品组件列表（仅 beverage），从以下选项中选：
+  茶底: "绿茶"|"红茶"|"乌龙茶"|"茉莉花茶"|"咖啡"
+  奶类: "全脂牛奶"|"脱脂牛奶"|"燕麦奶"|"椰奶"|"奶盖"
+  甜味剂: "果糖糖浆"|"黑糖"|"蜂蜜"|"零卡糖"
+  小料: "珍珠"|"椰果"|"红豆"|"仙草"|"布丁"|"芝士奶盖"|"芋泥"|"燕麦"
+- nutritionLabel: 包装食品营养成分表（仅 packaged），从包装图片上 OCR 读取
+  { calories, protein, carbs, fat, servingSize }
+  其他类别为 null
 
 注意：
-1. 热量给一个范围（如 300-400），体现估算的不确定性
-2. 单一成分食物（如米饭、鸡蛋）范围可以很窄
-3. 如果图片中无食物，返回空数组
-4. 严格只输出 JSON，不要输出任何其他文字
+1. 如果图片中无食物，foods 返回空数组
+2. 严格只输出 JSON，不要输出任何其他文字
+3. 烹饪方式根据图片中食物的外观判断（油光、颜色、质地）
 
 输出格式：
 {
   "foods": [
     {
-      "name": "...",
-      "weight": 250,
-      "caloriesMin": 400,
-      "caloriesMax": 500,
-      "protein": 30,
-      "carbs": 20,
-      "fat": 25
+      "name": "宫保鸡丁",
+      "weight": 300,
+      "category": "dish",
+      "cookingMethod": "stir-fry",
+      "estimatedOil": 15,
+      "size": null,
+      "components": null,
+      "nutritionLabel": null
     }
-  ],
-  "totalCaloriesMin": 400,
-  "totalCaloriesMax": 500
+  ]
 }`;
 
 function corsHeaders() {
