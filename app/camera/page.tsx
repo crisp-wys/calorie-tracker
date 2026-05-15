@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Salad } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
-import { MEAL_LABELS, type MealType, type FoodItem } from '@/lib/types';
+import { MEAL_LABELS, type MealType, type VisionFoodItem } from '@/lib/types';
+import { visionToFoodItems } from '@/lib/nutrition';
 import PhotoCapture from '@/components/PhotoCapture';
 import FoodCard from '@/components/FoodCard';
 
@@ -12,12 +13,6 @@ const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);
-}
-
-interface VisionResult {
-  foods: FoodItem[];
-  totalCaloriesMin: number;
-  totalCaloriesMax: number;
 }
 
 function suggestMealType(): MealType {
@@ -32,8 +27,9 @@ export default function CameraPage() {
   const { state, dispatch } = useApp();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<VisionResult | null>(null);
+  const [result, setResult] = useState<{ foods: ReturnType<typeof visionToFoodItems>; totalMin: number; totalMax: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notFoodOpen, setNotFoodOpen] = useState(false);
   const [mealType, setMealType] = useState<MealType>(suggestMealType());
 
   const handleCapture = async (base64: string) => {
@@ -55,15 +51,19 @@ export default function CameraPage() {
         return;
       }
 
-      const foods: FoodItem[] = (data.foods ?? []).map((f: FoodItem) => ({
-        ...f,
-        id: generateId(),
-      }));
+      const visionFoods: VisionFoodItem[] = data.foods ?? [];
+
+      if (visionFoods.length === 0) {
+        setNotFoodOpen(true);
+        return;
+      }
+
+      const foods = visionToFoodItems(visionFoods);
 
       setResult({
         foods,
-        totalCaloriesMin: data.totalCaloriesMin ?? foods.reduce((s, f) => s + f.caloriesMin, 0),
-        totalCaloriesMax: data.totalCaloriesMax ?? foods.reduce((s, f) => s + f.caloriesMax, 0),
+        totalMin: foods.reduce((s, f) => s + f.caloriesMin, 0),
+        totalMax: foods.reduce((s, f) => s + f.caloriesMax, 0),
       });
     } catch {
       setError('网络异常，请重试');
@@ -82,8 +82,8 @@ export default function CameraPage() {
       mealType,
       createdAt: new Date().toISOString(),
       foods: result.foods,
-      totalCaloriesMin: result.totalCaloriesMin,
-      totalCaloriesMax: result.totalCaloriesMax,
+      totalCaloriesMin: result.totalMin,
+      totalCaloriesMax: result.totalMax,
     };
 
     dispatch({ type: 'ADD_MEAL', meal });
@@ -152,7 +152,7 @@ export default function CameraPage() {
           </div>
 
           <div className="rounded-xl bg-brand/10 p-3 text-center text-sm text-brand font-medium">
-            本餐合计: {result.totalCaloriesMin}-{result.totalCaloriesMax} kcal
+            本餐合计: {result.totalMin}-{result.totalMax} kcal
           </div>
 
           <div className="flex gap-3">
@@ -170,6 +170,30 @@ export default function CameraPage() {
             </button>
           </div>
         </>
+      )}
+
+      {/* Non-food dialog */}
+      {notFoodOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-8">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setNotFoodOpen(false)} />
+          <div className="relative bg-white rounded-[20px] p-7 w-full max-w-sm text-center shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
+            <Salad className="h-14 w-14 mx-auto text-brand mb-3" />
+            <h3 className="text-[17px] font-bold mb-1.5">未识别到食物</h3>
+            <p className="text-[13px] text-gray-400 mb-5">这张图片中似乎没有食物，请重新拍摄或选择食物照片</p>
+            <button
+              onClick={() => { setNotFoodOpen(false); handleReset(); }}
+              className="w-full py-3 rounded-xl bg-brand text-[15px] font-semibold text-white active:brightness-90 transition-all"
+            >
+              重新拍摄
+            </button>
+            <button
+              onClick={() => setNotFoodOpen(false)}
+              className="w-full py-2.5 mt-1.5 rounded-xl text-[13px] text-gray-400 active:bg-gray-50 transition-colors"
+            >
+              取消
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
