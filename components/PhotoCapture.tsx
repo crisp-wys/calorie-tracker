@@ -1,14 +1,15 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Camera, Image, Loader2 } from 'lucide-react';
+import { Camera, Image, Loader2, Pencil } from 'lucide-react';
 
 interface PhotoCaptureProps {
   onCapture: (base64: string) => void;
+  onManual?: () => void;
   loading: boolean;
 }
 
-export default function PhotoCapture({ onCapture, loading }: PhotoCaptureProps) {
+export default function PhotoCapture({ onCapture, onManual, loading }: PhotoCaptureProps) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const [showSheet, setShowSheet] = useState(false);
@@ -91,12 +92,23 @@ export default function PhotoCapture({ onCapture, loading }: PhotoCaptureProps) 
 
             <button
               onClick={handleGallery}
-              className="w-full flex items-center gap-3 px-3 py-3.5 rounded-xl bg-gray-50 active:bg-gray-100 transition-colors mb-3"
+              className="w-full flex items-center gap-3 px-3 py-3.5 rounded-xl bg-gray-50 active:bg-gray-100 transition-colors mb-1"
             >
               <Image className="h-6 w-6 text-brand" />
               <div className="text-left">
                 <div className="text-[15px] font-semibold">从相册选择</div>
                 <div className="text-xs text-gray-400">上传已有照片</div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => { setShowSheet(false); onManual?.(); }}
+              className="w-full flex items-center gap-3 px-3 py-3.5 rounded-xl bg-gray-50 active:bg-gray-100 transition-colors mb-3"
+            >
+              <Pencil className="h-6 w-6 text-brand" />
+              <div className="text-left">
+                <div className="text-[15px] font-semibold">手动输入</div>
+                <div className="text-xs text-gray-400">自行填写营养数据</div>
               </div>
             </button>
 
