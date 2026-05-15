@@ -1,0 +1,37 @@
+{
+  "base": {
+    "绿茶": { "calories": 1, "protein": 0.1, "carbs": 0, "fat": 0 },
+    "红茶": { "calories": 1, "protein": 0.1, "carbs": 0, "fat": 0 },
+    "乌龙茶": { "calories": 1, "protein": 0.1, "carbs": 0, "fat": 0 },
+    "茉莉花茶": { "calories": 2, "protein": 0.1, "carbs": 0.2, "fat": 0 },
+    "咖啡": { "calories": 2, "protein": 0.1, "carbs": 0, "fat": 0 }
+  },
+  "milk": {
+    "全脂牛奶": { "calories": 61, "protein": 3.0, "carbs": 4.8, "fat": 3.2 },
+    "脱脂牛奶": { "calories": 34, "protein": 3.4, "carbs": 5.0, "fat": 0.1 },
+    "燕麦奶": { "calories": 45, "protein": 1.0, "carbs": 7.0, "fat": 1.5 },
+    "椰奶": { "calories": 50, "protein": 0.5, "carbs": 2.0, "fat": 5.0 },
+    "奶盖": { "calories": 220, "protein": 1.5, "carbs": 8.0, "fat": 20.0 }
+  },
+  "sweetener": {
+    "果糖糖浆": { "calories": 280, "protein": 0, "carbs": 70, "fat": 0 },
+    "黑糖": { "calories": 380, "protein": 0, "carbs": 95, "fat": 0 },
+    "蜂蜜": { "calories": 304, "protein": 0.3, "carbs": 82.4, "fat": 0 },
+    "零卡糖": { "calories": 0, "protein": 0, "carbs": 0, "fat": 0 }
+  },
+  "topping": {
+    "珍珠": { "calories": 80, "protein": 0.5, "carbs": 19, "fat": 0.2 },
+    "椰果": { "calories": 40, "protein": 0, "carbs": 10, "fat": 0 },
+    "红豆": { "calories": 60, "protein": 2.0, "carbs": 12, "fat": 0.3 },
+    "仙草": { "calories": 15, "protein": 0, "carbs": 3.5, "fat": 0 },
+    "布丁": { "calories": 90, "protein": 2.0, "carbs": 14, "fat": 3.0 },
+    "芝士奶盖": { "calories": 180, "protein": 1.2, "carbs": 6, "fat": 17.0 },
+    "芋泥": { "calories": 90, "protein": 1.5, "carbs": 18, "fat": 1.5 },
+    "燕麦": { "calories": 45, "protein": 1.5, "carbs": 8, "fat": 1.0 }
+  },
+  "sizeMultiplier": {
+    "small": 1.0,
+    "medium": 1.5,
+    "large": 2.0
+  }
+}

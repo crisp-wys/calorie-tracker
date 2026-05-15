@@ -1,0 +1,10 @@
+{
+  "steam": { "rawToCookedRatio": 0.95, "correctionFactor": 1.0, "oilAbsorption": 0 },
+  "boil": { "rawToCookedRatio": 0.85, "correctionFactor": 0.95, "oilAbsorption": 0 },
+  "stir-fry": { "rawToCookedRatio": 0.75, "correctionFactor": 1.05, "oilAbsorption": 0.8 },
+  "deep-fry": { "rawToCookedRatio": 0.65, "correctionFactor": 1.1, "oilAbsorption": 0.85 },
+  "roast": { "rawToCookedRatio": 0.72, "correctionFactor": 1.05, "oilAbsorption": 0.5 },
+  "braise": { "rawToCookedRatio": 0.78, "correctionFactor": 1.08, "oilAbsorption": 0.6 },
+  "cold": { "rawToCookedRatio": 1.0, "correctionFactor": 1.0, "oilAbsorption": 0.3 },
+  "raw": { "rawToCookedRatio": 1.0, "correctionFactor": 1.0, "oilAbsorption": 0 }
+}
