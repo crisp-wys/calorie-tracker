@@ -1,6 +1,8 @@
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 export type Gender = 'male' | 'female';
 export type ActivityLevel = 1 | 2 | 3 | 4 | 5;
+export type FoodCategory = 'dish' | 'ingredient' | 'beverage' | 'packaged';
+export type CookingMethod = 'steam' | 'boil' | 'stir-fry' | 'deep-fry' | 'roast' | 'braise' | 'cold' | 'raw';
 
 export const ACTIVITY_LABELS: Record<ActivityLevel, string> = {
   1: '久坐（几乎不运动）',
@@ -15,6 +17,17 @@ export const MEAL_LABELS: Record<MealType, string> = {
   lunch: '午餐',
   dinner: '晚餐',
   snack: '加餐',
+};
+
+export const COOKING_LABELS: Record<CookingMethod, string> = {
+  'steam': '蒸',
+  'boil': '煮',
+  'stir-fry': '炒',
+  'deep-fry': '炸',
+  'roast': '烤',
+  'braise': '炖/红烧',
+  'cold': '凉拌',
+  'raw': '生食',
 };
 
 export interface FoodItem {
@@ -51,4 +64,27 @@ export interface UserProfile {
 export interface AppState {
   profile: UserProfile | null;
   meals: MealRecord[];
+}
+
+// Qwen VL returns raw food descriptions
+export interface VisionFoodItem {
+  name: string;
+  weight: number;
+  category: FoodCategory;
+  cookingMethod: CookingMethod | null;
+  estimatedOil: number;
+  size: 'small' | 'medium' | 'large' | null;
+  components: string[] | null;
+  nutritionLabel: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    servingSize: number;
+  } | null;
+}
+
+// API response
+export interface VisionResult {
+  foods: VisionFoodItem[];
 }
