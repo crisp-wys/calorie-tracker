@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertTriangle, Salad } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
 import { MEAL_LABELS, type MealType, type VisionFoodItem } from '@/lib/types';
@@ -30,7 +30,20 @@ export default function CameraPage() {
   const [result, setResult] = useState<{ foods: ReturnType<typeof visionToFoodItems>; totalMin: number; totalMax: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notFoodOpen, setNotFoodOpen] = useState(false);
-  const [mealType, setMealType] = useState<MealType>(suggestMealType());
+  const searchParams = useSearchParams();
+
+  const [mealType, setMealType] = useState<MealType>(() => {
+    const fromUrl = searchParams.get('mealType');
+    if (fromUrl && ['breakfast', 'lunch', 'dinner', 'snack'].includes(fromUrl)) {
+      return fromUrl as MealType;
+    }
+    return suggestMealType();
+  });
+
+  const [manualForm, setManualForm] = useState<{
+    name: string; weight: number; calories: number;
+    protein: number; carbs: number; fat: number;
+  } | null>(null);
 
   const handleCapture = async (base64: string) => {
     setLoading(true);
@@ -72,6 +85,26 @@ export default function CameraPage() {
     }
   };
 
+  const handleManualSubmit = () => {
+    if (!manualForm || !manualForm.name.trim()) return;
+    const food = {
+      id: generateId(),
+      name: manualForm.name.trim(),
+      weight: manualForm.weight || 100,
+      caloriesMin: manualForm.calories,
+      caloriesMax: manualForm.calories,
+      protein: manualForm.protein || 0,
+      carbs: manualForm.carbs || 0,
+      fat: manualForm.fat || 0,
+    };
+    setResult({
+      foods: [food],
+      totalMin: food.caloriesMin,
+      totalMax: food.caloriesMax,
+    });
+    setManualForm(null);
+  };
+
   const handleConfirm = () => {
     if (!result) return;
 
@@ -93,6 +126,7 @@ export default function CameraPage() {
   const handleReset = () => {
     setResult(null);
     setError(null);
+    setManualForm(null);
   };
 
   if (!state.profile) {
@@ -114,8 +148,12 @@ export default function CameraPage() {
     <div className="px-4 pt-6 pb-4 space-y-4">
       <h1 className="text-xl font-extrabold">拍照识别</h1>
 
-      {!result && !error && (
-        <PhotoCapture onCapture={handleCapture} loading={loading} />
+      {!result && !error && !manualForm && (
+        <PhotoCapture
+          onCapture={handleCapture}
+          onManual={() => setManualForm({ name: '', weight: 100, calories: 0, protein: 0, carbs: 0, fat: 0 })}
+          loading={loading}
+        />
       )}
 
       {error && (
@@ -170,6 +208,75 @@ export default function CameraPage() {
             </button>
           </div>
         </>
+      )}
+
+      {/* Manual entry form */}
+      {manualForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
+          <div className="absolute inset-0 bg-black/35" onClick={() => setManualForm(null)} />
+          <div className="relative bg-white rounded-[20px] p-6 w-full max-w-sm">
+            <h3 className="text-lg font-bold mb-4">手动输入</h3>
+            <div className="space-y-3">
+              <input
+                placeholder="菜名"
+                value={manualForm.name}
+                onChange={e => setManualForm({ ...manualForm, name: e.target.value })}
+                className="w-full rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-brand"
+              />
+              <input
+                type="number"
+                placeholder="重量 (g)"
+                value={manualForm.weight}
+                onChange={e => setManualForm({ ...manualForm, weight: Number(e.target.value) })}
+                className="w-full rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-brand"
+              />
+              <input
+                type="number"
+                placeholder="热量 (kcal)"
+                value={manualForm.calories}
+                onChange={e => setManualForm({ ...manualForm, calories: Number(e.target.value) })}
+                className="w-full rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-brand"
+              />
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder="蛋白质 (g)"
+                  value={manualForm.protein}
+                  onChange={e => setManualForm({ ...manualForm, protein: Number(e.target.value) })}
+                  className="flex-1 rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-brand"
+                />
+                <input
+                  type="number"
+                  placeholder="碳水 (g)"
+                  value={manualForm.carbs}
+                  onChange={e => setManualForm({ ...manualForm, carbs: Number(e.target.value) })}
+                  className="flex-1 rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-brand"
+                />
+                <input
+                  type="number"
+                  placeholder="脂肪 (g)"
+                  value={manualForm.fat}
+                  onChange={e => setManualForm({ ...manualForm, fat: Number(e.target.value) })}
+                  className="flex-1 rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-brand"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-5">
+              <button
+                onClick={handleManualSubmit}
+                className="flex-1 rounded-xl bg-brand py-3 text-sm font-bold text-white active:brightness-90 transition-all"
+              >
+                添加到记录
+              </button>
+              <button
+                onClick={() => setManualForm(null)}
+                className="rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-500 active:bg-gray-50 transition-colors"
+              >
+                取消
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Non-food dialog */}
