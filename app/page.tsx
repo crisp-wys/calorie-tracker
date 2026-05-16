@@ -7,6 +7,7 @@ import RingProgress from '@/components/RingProgress';
 import MacroBars from '@/components/MacroBar';
 import MealSection from '@/components/MealSection';
 import OnboardingScreen from '@/components/SplashScreen';
+import ChatCard from '@/components/ChatCard';
 
 const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 
@@ -80,6 +81,8 @@ export default function DashboardPage() {
           />
         ))}
       </div>
+
+      <ChatCard />
     </div>
   );
 }
