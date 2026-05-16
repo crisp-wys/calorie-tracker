@@ -132,41 +132,14 @@ export default function ChatCard() {
         throw new Error(errData.error || `HTTP ${res.status}`);
       }
 
-      const reader = res.body?.getReader();
-      if (!reader) throw new Error('No reader');
+      const data = await res.json();
+      const content = data.content || '';
 
-      const decoder = new TextDecoder();
-      let content = '';
-      let clientBuffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        clientBuffer += decoder.decode(value, { stream: true });
-        const lines = clientBuffer.split('\n');
-        clientBuffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6).trim();
-            if (data === '[DONE]') continue;
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.token) {
-                content += parsed.token;
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === aiMsgId ? { ...m, content } : m
-                  )
-                );
-              }
-            } catch {
-              // skip unparseable token
-            }
-          }
-        }
-      }
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === aiMsgId ? { ...m, content } : m
+        )
+      );
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : '未知错误';
       setMessages((prev) =>

@@ -1,61 +1,44 @@
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 
-function corsHeaders() {
-  return {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  };
-}
-
-export const handler = async (req, resp, context) => {
-  if (req.method === 'OPTIONS') {
-    resp.setStatusCode(200);
-    Object.entries(corsHeaders()).forEach(([k, v]) => resp.setHeader(k, v));
-    resp.send('');
-    return;
-  }
-
-  try {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-    const { action } = body;
-
-    if (action === 'chat') {
-      return handleChat(req, resp, body);
-    } else if (action === 'memory') {
-      return handleMemory(req, resp, body);
-    } else {
-      resp.setStatusCode(400);
-      Object.entries(corsHeaders()).forEach(([k, v]) => resp.setHeader(k, v));
-      resp.setHeader('Content-Type', 'application/json');
-      resp.send(JSON.stringify({ error: '缺少 action 参数' }));
-    }
-  } catch (error) {
-    resp.setStatusCode(500);
-    Object.entries(corsHeaders()).forEach(([k, v]) => resp.setHeader(k, v));
-    resp.setHeader('Content-Type', 'application/json');
-    resp.send(JSON.stringify({ error: '服务器内部错误' }));
-  }
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-async function handleChat(req, resp, body) {
+function respJSON(callback, statusCode, body) {
+  callback(null, {
+    statusCode,
+    headers: { 'Content-Type': 'application/json', ...CORS },
+    body: JSON.stringify(body),
+    isBase64Encoded: false,
+  });
+}
+
+function respSSE(callback) {
+  callback(null, {
+    statusCode: 200,
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+      ...CORS,
+    },
+    body: '',
+    isBase64Encoded: false,
+  });
+}
+
+async function handleChat(event, callback, body) {
   const { message, history, systemPrompt } = body;
 
   if (!message || !systemPrompt) {
-    resp.setStatusCode(400);
-    Object.entries(corsHeaders()).forEach(([k, v]) => resp.setHeader(k, v));
-    resp.setHeader('Content-Type', 'application/json');
-    resp.send(JSON.stringify({ error: '缺少参数' }));
-    return;
+    return respJSON(callback, 400, { error: '缺少参数' });
   }
 
   if (!DEEPSEEK_API_KEY) {
-    resp.setStatusCode(500);
-    Object.entries(corsHeaders()).forEach(([k, v]) => resp.setHeader(k, v));
-    resp.setHeader('Content-Type', 'application/json');
-    resp.send(JSON.stringify({ error: 'API key not configured' }));
-    return;
+    return respJSON(callback, 500, { error: 'API key not configured' });
   }
 
   const messages = [
@@ -64,6 +47,7 @@ async function handleChat(req, resp, body) {
     { role: 'user', content: message },
   ];
 
+  // Use non-streaming for event function compatibility
   let upstream;
   try {
     upstream = await fetch(DEEPSEEK_API_URL, {
@@ -75,89 +59,34 @@ async function handleChat(req, resp, body) {
       body: JSON.stringify({
         model: 'deepseek-chat',
         messages,
-        stream: true,
+        stream: false,
         temperature: 0.7,
         max_tokens: 1024,
       }),
     });
   } catch (err) {
-    resp.setStatusCode(502);
-    Object.entries(corsHeaders()).forEach(([k, v]) => resp.setHeader(k, v));
-    resp.setHeader('Content-Type', 'application/json');
-    resp.send(JSON.stringify({ error: `无法连接 DeepSeek API: ${err.message}` }));
-    return;
+    return respJSON(callback, 502, { error: `无法连接 DeepSeek API: ${err.message}` });
   }
 
   if (!upstream.ok) {
     const errText = await upstream.text();
-    resp.setStatusCode(upstream.status);
-    Object.entries(corsHeaders()).forEach(([k, v]) => resp.setHeader(k, v));
-    resp.setHeader('Content-Type', 'application/json');
-    resp.send(JSON.stringify({ error: `DeepSeek API error(${upstream.status}): ${errText}` }));
-    return;
+    return respJSON(callback, upstream.status, { error: `DeepSeek API error(${upstream.status}): ${errText}` });
   }
 
-  resp.setStatusCode(200);
-  Object.entries(corsHeaders()).forEach(([k, v]) => resp.setHeader(k, v));
-  resp.setHeader('Content-Type', 'text/event-stream');
-  resp.setHeader('Cache-Control', 'no-cache');
-  resp.setHeader('Connection', 'keep-alive');
-
-  const reader = upstream.body.getReader();
-  const decoder = new TextDecoder();
-  const encoder = new TextEncoder();
-  let buffer = '';
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6).trim();
-          if (data === '[DONE]') {
-            resp.write('data: [DONE]\n\n');
-            continue;
-          }
-          try {
-            const parsed = JSON.parse(data);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              resp.write(`data: ${JSON.stringify({ token: content })}\n\n`);
-            }
-          } catch {
-            // skip unparseable chunks
-          }
-        }
-      }
-    }
-  } finally {
-    resp.end();
-  }
+  const data = await upstream.json();
+  const content = data.choices?.[0]?.message?.content ?? '';
+  return respJSON(callback, 200, { content });
 }
 
-async function handleMemory(req, resp, body) {
+async function handleMemory(event, callback, body) {
   const { systemPrompt } = body;
 
   if (!systemPrompt) {
-    resp.setStatusCode(400);
-    Object.entries(corsHeaders()).forEach(([k, v]) => resp.setHeader(k, v));
-    resp.setHeader('Content-Type', 'application/json');
-    resp.send(JSON.stringify({ error: '缺少 systemPrompt 参数' }));
-    return;
+    return respJSON(callback, 400, { error: '缺少 systemPrompt 参数' });
   }
 
   if (!DEEPSEEK_API_KEY) {
-    resp.setStatusCode(500);
-    Object.entries(corsHeaders()).forEach(([k, v]) => resp.setHeader(k, v));
-    resp.setHeader('Content-Type', 'application/json');
-    resp.send(JSON.stringify({ error: 'API key not configured' }));
-    return;
+    return respJSON(callback, 500, { error: 'API key not configured' });
   }
 
   let upstream;
@@ -176,25 +105,42 @@ async function handleMemory(req, resp, body) {
       }),
     });
   } catch (err) {
-    resp.setStatusCode(502);
-    Object.entries(corsHeaders()).forEach(([k, v]) => resp.setHeader(k, v));
-    resp.setHeader('Content-Type', 'application/json');
-    resp.send(JSON.stringify({ error: `无法连接 DeepSeek API: ${err.message}` }));
-    return;
+    return respJSON(callback, 502, { error: `无法连接 DeepSeek API: ${err.message}` });
   }
 
   if (!upstream.ok) {
     const errText = await upstream.text();
-    resp.setStatusCode(upstream.status);
-    Object.entries(corsHeaders()).forEach(([k, v]) => resp.setHeader(k, v));
-    resp.setHeader('Content-Type', 'application/json');
-    resp.send(JSON.stringify({ error: `DeepSeek API error(${upstream.status}): ${errText}` }));
-    return;
+    return respJSON(callback, upstream.status, { error: `DeepSeek API error(${upstream.status}): ${errText}` });
   }
 
   const data = await upstream.json();
-  resp.setStatusCode(200);
-  Object.entries(corsHeaders()).forEach(([k, v]) => resp.setHeader(k, v));
-  resp.setHeader('Content-Type', 'application/json');
-  resp.send(JSON.stringify(data));
+  return respJSON(callback, 200, data);
 }
+
+// Event function handler — matches vision function format
+export const handler = async (event, context, callback) => {
+  try {
+    // Parse HTTP request from event buffer
+    const parsed = JSON.parse(Buffer.from(event).toString());
+    const httpMethod = parsed.requestContext?.http?.method || parsed.httpMethod || 'POST';
+
+    if (httpMethod === 'OPTIONS') {
+      return respJSON(callback, 200, {});
+    }
+
+    const body = parsed.body;
+    const bodyObj = typeof body === 'string' ? JSON.parse(body) : (body || {});
+
+    const { action } = bodyObj;
+
+    if (action === 'chat') {
+      return handleChat(parsed, callback, bodyObj);
+    } else if (action === 'memory') {
+      return handleMemory(parsed, callback, bodyObj);
+    } else {
+      return respJSON(callback, 400, { error: '缺少 action 参数' });
+    }
+  } catch (error) {
+    return respJSON(callback, 500, { error: '服务器内部错误' });
+  }
+};
