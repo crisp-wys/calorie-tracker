@@ -20,6 +20,11 @@ const PERSONALITY_OPTIONS: {
   { value: 'custom', emoji: '\u{1F3A8}', label: '自定义', desc: '自己定义 AI 的说话方式' },
 ];
 
+const CHAT_API_URL =
+  typeof window !== 'undefined'
+    ? process.env.NEXT_PUBLIC_CHAT_URL || ''
+    : '';
+
 export default function ChatCard() {
   const { state } = useApp();
   const [expanded, setExpanded] = useState(false);
@@ -49,12 +54,12 @@ export default function ChatCard() {
         systemPrompt +
         '\n\n输出格式：{"insights":[{"id":"1","type":"pattern|trend|warning","text":"..."}],"preferences":["..."],"milestones":[{"date":"YYYY-MM-DD","event":"..."}]}';
 
-      const res = await fetch('/api/memory', {
+      const res = await fetch(CHAT_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ systemPrompt: summaryPrompt }),
+        body: JSON.stringify({ action: 'memory', systemPrompt: summaryPrompt }),
       });
 
       const data = await res.json();
@@ -111,10 +116,11 @@ export default function ChatCard() {
     setMessages([...newMessages, aiMsg]);
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await fetch(CHAT_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          action: 'chat',
           message: userMsg.content,
           history: history.slice(0, -1),
           systemPrompt,
