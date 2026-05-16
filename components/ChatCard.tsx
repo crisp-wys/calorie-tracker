@@ -121,7 +121,10 @@ export default function ChatCard() {
         }),
       });
 
-      if (!res.ok) throw new Error('API error');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+        throw new Error(errData.error || `HTTP ${res.status}`);
+      }
 
       const reader = res.body?.getReader();
       if (!reader) throw new Error('No reader');
@@ -158,11 +161,12 @@ export default function ChatCard() {
           }
         }
       }
-    } catch {
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : '未知错误';
       setMessages((prev) =>
         prev.map((m) =>
           m.id === aiMsgId
-            ? { ...m, content: '抱歉，出了点问题，请重试。' }
+            ? { ...m, content: `抱歉，出了点问题：${errorMsg}` }
             : m
         )
       );

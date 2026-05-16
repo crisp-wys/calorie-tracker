@@ -27,25 +27,33 @@ export async function POST(req: NextRequest) {
     { role: 'user', content: message },
   ];
 
-  const upstream = await fetch('https://api.deepseek.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'deepseek-chat',
-      messages,
-      stream: true,
-      temperature: 0.7,
-      max_tokens: 1024,
-    }),
-  });
+  let upstream: Response;
+  try {
+    upstream = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages,
+        stream: true,
+        temperature: 0.7,
+        max_tokens: 1024,
+      }),
+    });
+  } catch (fetchErr) {
+    return new Response(
+      JSON.stringify({ error: `无法连接 DeepSeek API: ${fetchErr instanceof Error ? fetchErr.message : 'network error'}` }),
+      { status: 502, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
 
   if (!upstream.ok) {
     const err = await upstream.text();
     return new Response(
-      JSON.stringify({ error: `DeepSeek API error: ${err}` }),
+      JSON.stringify({ error: `DeepSeek API error(${upstream.status}): ${err}` }),
       { status: upstream.status, headers: { 'Content-Type': 'application/json' } }
     );
   }
