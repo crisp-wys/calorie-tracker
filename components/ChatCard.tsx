@@ -49,21 +49,12 @@ export default function ChatCard() {
         systemPrompt +
         '\n\n输出格式：{"insights":[{"id":"1","type":"pattern|trend|warning","text":"..."}],"preferences":["..."],"milestones":[{"date":"YYYY-MM-DD","event":"..."}]}';
 
-      const apiKey = process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY;
-      if (!apiKey) return;
-
-      const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      const res = await fetch('/api/memory', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [{ role: 'user', content: summaryPrompt }],
-          temperature: 0.3,
-          max_tokens: 512,
-        }),
+        body: JSON.stringify({ systemPrompt: summaryPrompt }),
       });
 
       const data = await res.json();
@@ -137,13 +128,15 @@ export default function ChatCard() {
 
       const decoder = new TextDecoder();
       let content = '';
+      let clientBuffer = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const text = decoder.decode(value, { stream: true });
-        const lines = text.split('\n');
+        clientBuffer += decoder.decode(value, { stream: true });
+        const lines = clientBuffer.split('\n');
+        clientBuffer = lines.pop() || '';
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
