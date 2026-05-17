@@ -1,7 +1,7 @@
 :HL["/calorie-tracker/_next/static/chunks/0ugr_tv2a9ibs.css","style"]
 :HL["/calorie-tracker/_next/static/chunks/0zo_k6~r~43sb.css","style"]
-:HL["/calorie-tracker/_next/static/chunks/04o7uk8j9wl5n.css","style"]
+:HL["/calorie-tracker/_next/static/chunks/01r3d1fv7s.90.css","style"]
 :HL["/calorie-tracker/_next/static/media/01df91ade8cd5cb0-s.p.0~rieygqbfw.7.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/calorie-tracker/_next/static/media/f78483cb4757fca7-s.p.0~yx-4~10_31m.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/calorie-tracker/_next/static/media/feb57b2dc8f29018-s.p.13c9k6c3vhklu.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"calendar","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"nuaj3fh5KMNJlm3_OaGIG"}
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"calendar","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"1UbPovw23MqgDJL81I-NJ"}
