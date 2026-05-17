@@ -263,7 +263,7 @@ export default function ChatCard() {
 
       {/* AI Settings Panel */}
       {settingsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
           <div
             className="absolute inset-0 bg-black/35"
             onClick={() => setSettingsOpen(false)}
