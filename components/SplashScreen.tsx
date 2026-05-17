@@ -5,7 +5,7 @@ import Link from 'next/link';
 export default function OnboardingScreen() {
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center bg-[#F8F9FA] overflow-y-auto"
+      className="fixed inset-0 z-[100] flex flex-col items-center bg-[#F8F9FA] overflow-y-auto"
       style={{
         backgroundImage: `
           linear-gradient(rgba(230,57,70,.03) 1px, transparent 1px),
