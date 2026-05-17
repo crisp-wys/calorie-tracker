@@ -1,0 +1,18 @@
+{
+  "name": "这顿不算",
+  "short_name": "这顿不算",
+  "description": "拍照识别热量，吃了再说",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F8F9FA",
+  "theme_color": "#E63946",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

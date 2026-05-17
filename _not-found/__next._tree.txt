@@ -1,0 +1,4 @@
+:HL["/calorie-tracker/_next/static/chunks/0ugr_tv2a9ibs.css","style"]
+:HL["/calorie-tracker/_next/static/chunks/0zo_k6~r~43sb.css","style"]
+:HL["/calorie-tracker/_next/static/chunks/04o7uk8j9wl5n.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"nuaj3fh5KMNJlm3_OaGIG"}
