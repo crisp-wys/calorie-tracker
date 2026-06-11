@@ -59,6 +59,7 @@ export interface UserProfile {
   activityLevel: ActivityLevel;
   tdee: number;
   dailyTarget: number;
+  goalType: 'lose' | 'maintain' | 'gain';
 }
 
 export interface AppState {
@@ -75,6 +76,8 @@ export interface VisionFoodItem {
   estimatedOil: number;
   size: 'small' | 'medium' | 'large' | null;
   components: string[] | null;
+  /** 复合菜品的食材拆解，如"番茄炒蛋" → ["番茄", "鸡蛋"]，便于本地数据库查表计算 */
+  ingredients: string[] | null;
   nutritionLabel: {
     calories: number;
     protein: number;
@@ -122,9 +125,22 @@ export interface UserMemory {
   lastSummaryDate: string | null;
 }
 
+// ── 智能预警 ──
+
+export type AlertType = 'calorie_over' | 'calorie_under' | 'macro_imbalance' | 'dinner_heavy' | 'meal_spike';
+
+export interface Alert {
+  type: AlertType;
+  title: string;
+  message: string;
+  suggestion: string;
+  color: 'yellow' | 'blue' | 'purple';
+  emoji: string;
+}
+
 export const DEFAULT_AI_CONFIG: AIConfig = {
   name: 'AI 教练',
   personality: 'encouraging',
   customPrompt: '',
-  avatar: '',
+  avatar: 'robot',
 };

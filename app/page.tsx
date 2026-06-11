@@ -3,27 +3,41 @@
 import { useMemo } from 'react';
 import { useApp } from '@/lib/AppContext';
 import { type MealType } from '@/lib/types';
+import { calcAvgCalories } from '@/lib/utils';
 import RingProgress from '@/components/RingProgress';
 import MacroBars from '@/components/MacroBar';
 import MealSection from '@/components/MealSection';
-import OnboardingScreen from '@/components/SplashScreen';
-import ChatCard from '@/components/ChatCard';
+import OnboardingWizard from '@/components/OnboardingWizard';
+import { calcAlerts } from '@/lib/alerts';
+import AlertBannerList from '@/components/AlertBannerList';
 
 const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 
 export default function DashboardPage() {
-  const { state } = useApp();
+  const { state, loading } = useApp();
   const { profile, meals } = state;
 
+  // Show loading spinner while fetching from Supabase
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[#F8F9FA]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+          <p className="text-sm text-gray-400">加载中…</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!profile) {
-    return <OnboardingScreen />;
+    return <OnboardingWizard />;
   }
 
   const today = new Date().toISOString().split('T')[0];
   const todayMeals = meals.filter((m) => m.date === today);
 
   const totalCalories = todayMeals.reduce(
-    (s, m) => s + (m.totalCaloriesMin + m.totalCaloriesMax) / 2,
+    (s, m) => s + calcAvgCalories(m.totalCaloriesMin, m.totalCaloriesMax),
     0
   );
   const roundedCalories = Math.round(totalCalories);
@@ -40,6 +54,8 @@ export default function DashboardPage() {
     return { protein: Math.round(protein), carbs: Math.round(carbs), fat: Math.round(fat) };
   }, [todayMeals]);
 
+  const alerts = useMemo(() => calcAlerts(meals, profile), [meals, profile]);
+
   const dailyTarget = profile?.dailyTarget ?? 2000;
 
   const proteinTarget = Math.round((dailyTarget * 0.3) / 4);
@@ -55,6 +71,13 @@ export default function DashboardPage() {
   return (
     <div className="px-4 pt-6 pb-4 space-y-4">
       <h1 className="text-sm text-gray-400 tracking-wide">{dateStr}</h1>
+
+      <AlertBannerList
+        alerts={alerts}
+        onOpenChat={(prefill) => {
+          window.dispatchEvent(new CustomEvent('open-coach-chat', { detail: prefill }));
+        }}
+      />
 
       <div className="flex justify-center pt-2 pb-2">
         <RingProgress current={roundedCalories} target={dailyTarget} />
@@ -81,8 +104,6 @@ export default function DashboardPage() {
           />
         ))}
       </div>
-
-      <ChatCard />
     </div>
   );
 }
