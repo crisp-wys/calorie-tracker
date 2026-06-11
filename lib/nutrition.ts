@@ -44,10 +44,10 @@ function calcDish(vf: VisionFoodItem): NutritionData {
   const calories = protein * 4 + carbs * 4 + fat * 9;
 
   return {
-    protein: Math.round(protein),
-    carbs: Math.round(carbs),
-    fat: Math.round(fat),
-    calories: Math.round(calories),
+    protein: Math.round(protein) || 0,
+    carbs: Math.round(carbs) || 0,
+    fat: Math.round(fat) || 0,
+    calories: Math.round(calories) || 0,
   };
 }
 
@@ -56,10 +56,10 @@ function calcIngredient(vf: VisionFoodItem): NutritionData {
   if (!food) return fallbackEstimate(vf);
 
   return {
-    protein: Math.round(food.protein * vf.weight / 100),
-    carbs: Math.round(food.carbs * vf.weight / 100),
-    fat: Math.round(food.fat * vf.weight / 100),
-    calories: Math.round(food.calories * vf.weight / 100),
+    protein: Math.round(food.protein * vf.weight / 100) || 0,
+    carbs: Math.round(food.carbs * vf.weight / 100) || 0,
+    fat: Math.round(food.fat * vf.weight / 100) || 0,
+    calories: Math.round(food.calories * vf.weight / 100) || 0,
   };
 }
 
@@ -85,10 +85,10 @@ function calcBeverage(vf: VisionFoodItem): NutritionData {
   }
 
   total = {
-    protein: Math.round(total.protein * multiplier),
-    carbs: Math.round(total.carbs * multiplier),
-    fat: Math.round(total.fat * multiplier),
-    calories: Math.round(total.calories * multiplier),
+    protein: Math.round(total.protein * multiplier) || 0,
+    carbs: Math.round(total.carbs * multiplier) || 0,
+    fat: Math.round(total.fat * multiplier) || 0,
+    calories: Math.round(total.calories * multiplier) || 0,
   };
 
   return total;
@@ -101,49 +101,54 @@ function calcPackaged(vf: VisionFoodItem): NutritionData {
   const ratio = label.servingSize > 0 ? vf.weight / label.servingSize : 1;
 
   return {
-    protein: Math.round(label.protein * ratio),
-    carbs: Math.round(label.carbs * ratio),
-    fat: Math.round(label.fat * ratio),
-    calories: Math.round(label.calories * ratio),
+    protein: Math.round(label.protein * ratio) || 0,
+    carbs: Math.round(label.carbs * ratio) || 0,
+    fat: Math.round(label.fat * ratio) || 0,
+    calories: Math.round(label.calories * ratio) || 0,
   };
 }
 
 function fallbackEstimate(vf: VisionFoodItem): NutritionData {
   return {
-    protein: Math.round(vf.weight * 0.12),
-    carbs: Math.round(vf.weight * 0.15),
-    fat: Math.round(vf.weight * 0.08),
-    calories: Math.round(vf.weight * 1.8),
+    protein: Math.round(vf.weight * 0.12) || 0,
+    carbs: Math.round(vf.weight * 0.15) || 0,
+    fat: Math.round(vf.weight * 0.08) || 0,
+    calories: Math.round(vf.weight * 1.8) || 0,
   };
 }
 
 export function visionToFoodItems(visionFoods: VisionFoodItem[]): FoodItem[] {
   return visionFoods.map((vf) => {
+    // 防御 AI 模型返回缺失字段导致 NaN
+    const weight = typeof vf.weight === 'number' && vf.weight > 0 ? vf.weight : 100;
+    const estimatedOil = typeof vf.estimatedOil === 'number' ? vf.estimatedOil : 0;
+    const safeVf = { ...vf, weight, estimatedOil };
+
     let nutrition: NutritionData;
 
-    switch (vf.category) {
+    switch (safeVf.category) {
       case 'ingredient':
-        nutrition = calcIngredient(vf);
+        nutrition = calcIngredient(safeVf);
         break;
       case 'beverage':
-        nutrition = calcBeverage(vf);
+        nutrition = calcBeverage(safeVf);
         break;
       case 'packaged':
-        nutrition = calcPackaged(vf);
+        nutrition = calcPackaged(safeVf);
         break;
       default:
-        nutrition = calcDish(vf);
+        nutrition = calcDish(safeVf);
     }
 
     return {
       id: generateId(),
-      name: vf.name,
-      weight: vf.weight,
-      caloriesMin: Math.round(nutrition.calories * 0.85),
-      caloriesMax: Math.round(nutrition.calories * 1.15),
-      protein: nutrition.protein,
-      carbs: nutrition.carbs,
-      fat: nutrition.fat,
+      name: safeVf.name,
+      weight: safeVf.weight,
+      caloriesMin: Math.round((nutrition.calories || 0) * 0.85),
+      caloriesMax: Math.round((nutrition.calories || 0) * 1.15),
+      protein: nutrition.protein || 0,
+      carbs: nutrition.carbs || 0,
+      fat: nutrition.fat || 0,
     };
   });
 }

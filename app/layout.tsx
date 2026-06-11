@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { ZCOOL_KuaiLe, Noto_Sans_SC, Montserrat } from 'next/font/google';
 import { AppProvider } from '@/lib/AppContext';
-import BottomTab from '@/components/BottomTab';
+import BottomTabWrapper from '@/components/BottomTabWrapper';
 import './globals.css';
 
 const zcool = ZCOOL_KuaiLe({
@@ -47,7 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="mx-auto max-w-lg pb-16 min-h-full">
             {children}
           </main>
-          <BottomTab />
+          <BottomTabWrapper />
         </AppProvider>
       </body>
     </html>

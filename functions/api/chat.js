@@ -1,33 +1,48 @@
-import { NextRequest } from 'next/server';
+export async function onRequestOptions() {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    },
+  });
+}
 
-export async function POST(req: NextRequest) {
-  const { message, history, systemPrompt } = await req.json();
-
-  if (!message || !systemPrompt) {
-    return new Response(JSON.stringify({ error: '缺少参数' }), {
+export async function onRequestPost({ request, env }) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: '无效的请求体' }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     });
   }
 
-  const apiKey = process.env.DEEPSEEK_API_KEY;
+  const { message, history, systemPrompt } = body;
+  if (!message || !systemPrompt) {
+    return new Response(JSON.stringify({ error: '缺少参数' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    });
+  }
+
+  const apiKey = env.DEEPSEEK_API_KEY;
   if (!apiKey) {
     return new Response(JSON.stringify({ error: 'API key not configured' }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     });
   }
 
   const messages = [
     { role: 'system', content: systemPrompt },
-    ...history.map((h: { role: string; content: string }) => ({
-      role: h.role,
-      content: h.content,
-    })),
+    ...(history || []).map(h => ({ role: h.role, content: h.content })),
     { role: 'user', content: message },
   ];
 
-  let upstream: Response;
+  let upstream;
   try {
     upstream = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
@@ -43,25 +58,25 @@ export async function POST(req: NextRequest) {
         max_tokens: 1024,
       }),
     });
-  } catch (fetchErr) {
+  } catch (err) {
     return new Response(
-      JSON.stringify({ error: `无法连接 DeepSeek API: ${fetchErr instanceof Error ? fetchErr.message : 'network error'}` }),
-      { status: 502, headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: `无法连接 DeepSeek API: ${err.message}` }),
+      { status: 502, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
     );
   }
 
   if (!upstream.ok) {
-    const err = await upstream.text();
+    const errText = await upstream.text();
     return new Response(
-      JSON.stringify({ error: `DeepSeek API error(${upstream.status}): ${err}` }),
-      { status: upstream.status, headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: `DeepSeek API error(${upstream.status}): ${errText}` }),
+      { status: upstream.status, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
     );
   }
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
-      const reader = upstream.body?.getReader();
+      const reader = upstream.body.getReader();
       if (!reader) {
         controller.close();
         return;
@@ -91,9 +106,7 @@ export async function POST(req: NextRequest) {
                 const content = parsed.choices?.[0]?.delta?.content;
                 if (content) {
                   controller.enqueue(
-                    encoder.encode(
-                      `data: ${JSON.stringify({ token: content })}\n\n`
-                    )
+                    encoder.encode(`data: ${JSON.stringify({ token: content })}\n\n`)
                   );
                 }
               } catch {
@@ -113,6 +126,7 @@ export async function POST(req: NextRequest) {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
       Connection: 'keep-alive',
+      'Access-Control-Allow-Origin': '*',
     },
   });
 }

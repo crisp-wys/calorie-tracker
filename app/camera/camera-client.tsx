@@ -50,8 +50,7 @@ export default function CameraClient() {
     setError(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_SCF_URL || 'https://calorie-vision-wkllwsxbqi.cn-hangzhou.fcapp.run';
-      const res = await fetch(apiUrl, {
+      const res = await fetch('/api/vision', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: base64, mealType }),
@@ -212,7 +211,7 @@ export default function CameraClient() {
 
       {/* Manual entry form */}
       {manualForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
           <div className="absolute inset-0 bg-black/35" onClick={() => setManualForm(null)} />
           <div className="relative bg-white rounded-[20px] p-6 w-full max-w-sm">
             <h3 className="text-lg font-bold mb-4">手动输入</h3>
@@ -281,7 +280,7 @@ export default function CameraClient() {
 
       {/* Non-food dialog */}
       {notFoodOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-8">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-8">
           <div className="absolute inset-0 bg-black/40" onClick={() => setNotFoodOpen(false)} />
           <div className="relative bg-white rounded-[20px] p-7 w-full max-w-sm text-center shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
             <Salad className="h-14 w-14 mx-auto text-brand mb-3" />

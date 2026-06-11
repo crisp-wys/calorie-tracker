@@ -54,12 +54,12 @@ export default function ChatCard() {
         systemPrompt +
         '\n\n输出格式：{"insights":[{"id":"1","type":"pattern|trend|warning","text":"..."}],"preferences":["..."],"milestones":[{"date":"YYYY-MM-DD","event":"..."}]}';
 
-      const res = await fetch(CHAT_API_URL, {
+      const res = await fetch(`${CHAT_API_URL}/api/memory`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ action: 'memory', systemPrompt: summaryPrompt }),
+        body: JSON.stringify({ systemPrompt: summaryPrompt }),
       });
 
       const data = await res.json();
@@ -116,11 +116,10 @@ export default function ChatCard() {
     setMessages([...newMessages, aiMsg]);
 
     try {
-      const res = await fetch(CHAT_API_URL, {
+      const res = await fetch(`${CHAT_API_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'chat',
           message: userMsg.content,
           history: history.slice(0, -1),
           systemPrompt,

@@ -27,7 +27,9 @@
       "Bash(git check-ignore *)",
       "Bash(node -e \"console.log\\(require\\('next/package.json'\\).version\\)\")",
       "Bash(ls node_modules/next/dist/docs/)",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "Bash(code D:\\\\calorie-tracker)",
+      "Bash(code -r D:\\\\calorie-tracker)"
     ],
     "additionalDirectories": [
       "d:\\calorie-tracker\\docs\\superpowers",
