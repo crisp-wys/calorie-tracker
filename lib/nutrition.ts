@@ -26,6 +26,78 @@ const COOKING_SUFFIXES = [
   '丝', '片', '丁', '块', '末', '泥', '饼', '丸', '卷', '包',
 ];
 
+// ── Fallback density by category + cooking method ─────────────────
+
+const FALLBACK_DENSITY: Record<string, { calPerGram: number; proteinPct: number; carbsPct: number; fatPct: number }> = {
+  'dish|stir-fry': { calPerGram: 2.0, proteinPct: 0.15, carbsPct: 0.20, fatPct: 0.65 },
+  'dish|deep-fry': { calPerGram: 2.8, proteinPct: 0.10, carbsPct: 0.20, fatPct: 0.70 },
+  'dish|steam':    { calPerGram: 1.3, proteinPct: 0.30, carbsPct: 0.30, fatPct: 0.40 },
+  'dish|braise':   { calPerGram: 1.8, proteinPct: 0.18, carbsPct: 0.22, fatPct: 0.60 },
+  'dish|boil':     { calPerGram: 1.2, proteinPct: 0.25, carbsPct: 0.35, fatPct: 0.40 },
+  'dish|roast':    { calPerGram: 2.2, proteinPct: 0.20, carbsPct: 0.15, fatPct: 0.65 },
+  'dish|cold':     { calPerGram: 1.1, proteinPct: 0.25, carbsPct: 0.40, fatPct: 0.35 },
+  'dish|raw':      { calPerGram: 0.8, proteinPct: 0.20, carbsPct: 0.50, fatPct: 0.30 },
+  'ingredient':    { calPerGram: 1.5, proteinPct: 0.20, carbsPct: 0.30, fatPct: 0.50 },
+  'beverage':      { calPerGram: 0.4, proteinPct: 0.05, carbsPct: 0.80, fatPct: 0.15 },
+  'packaged':      { calPerGram: 3.5, proteinPct: 0.08, carbsPct: 0.55, fatPct: 0.37 },
+};
+
+// ── Ingredient ratios for common compound dishes ──────────────────
+
+const DISH_RATIOS: Record<string, Record<string, number>> = {
+  '番茄炒蛋':   { '番茄': 0.55, '鸡蛋': 0.45 },
+  '青椒肉丝':   { '青椒': 0.35, '猪瘦肉': 0.65 },
+  '宫保鸡丁':   { '鸡肉': 0.50, '花生': 0.20, '黄瓜': 0.15, '胡萝卜': 0.15 },
+  '鱼香肉丝':   { '猪瘦肉': 0.50, '木耳': 0.20, '胡萝卜': 0.15, '青椒': 0.15 },
+  '麻婆豆腐':   { '豆腐': 0.70, '猪肉': 0.30 },
+  '西兰花炒虾仁': { '西兰花': 0.45, '虾仁': 0.55 },
+  '红烧排骨':   { '猪排骨': 0.80, '土豆': 0.20 },
+  '红烧牛肉':   { '牛肉': 0.70, '土豆': 0.15, '胡萝卜': 0.15 },
+  '回锅肉':     { '猪肉': 0.55, '青椒': 0.25, '洋葱': 0.20 },
+  '地三鲜':     { '土豆': 0.35, '茄子': 0.35, '青椒': 0.30 },
+  '木须肉':     { '猪肉': 0.40, '鸡蛋': 0.30, '木耳': 0.20, '黄瓜': 0.10 },
+  '酸辣土豆丝': { '土豆': 0.90, '青椒': 0.10 },
+  '韭黄炒蛋':   { '鸡蛋': 0.60, '韭黄': 0.40 },
+  '蒜蓉西兰花': { '西兰花': 0.95, '大蒜': 0.05 },
+  '家常豆腐':   { '豆腐': 0.65, '猪肉': 0.25, '青椒': 0.10 },
+  '干煸豆角':   { '豆角': 0.85, '猪肉': 0.15 },
+  '红烧肉':     { '猪肉': 0.85, '土豆': 0.15 },
+  '糖醋里脊':   { '猪瘦肉': 0.75, '青椒': 0.15, '洋葱': 0.10 },
+  '辣子鸡':     { '鸡腿肉': 0.70, '花生': 0.20, '青椒': 0.05 },
+  '水煮鱼':     { '鱼肉': 0.55, '豆芽': 0.25, '白菜': 0.20 },
+  '蒜蓉菠菜':   { '菠菜': 0.95, '大蒜': 0.05 },
+  '葱花蛋':     { '鸡蛋': 0.70, '洋葱': 0.30 },
+  '金针菇炒蛋': { '鸡蛋': 0.55, '金针菇': 0.45 },
+  '蒜蓉生菜':   { '生菜': 0.95, '大蒜': 0.05 },
+  '韭菜炒蛋':   { '鸡蛋': 0.55, '韭菜': 0.45 },
+  '红烧鸡块':   { '鸡肉': 0.75, '土豆': 0.25 },
+  '糖醋排骨':   { '猪排骨': 0.85, '青椒': 0.10, '洋葱': 0.05 },
+  '土豆炖牛肉': { '牛肉': 0.55, '土豆': 0.45 },
+  '香菇青菜':   { '白菜': 0.50, '香菇': 0.50 },
+};
+
+// ── Default oil amounts & sanitization ─────────────────────────────
+
+const DEFAULT_OIL_GRAMS: Record<string, number> = {
+  steam: 0, boil: 0, raw: 0,
+  'stir-fry': 10, braise: 10, roast: 8, 'deep-fry': 35, cold: 3,
+};
+
+const OIL_MAX: Record<string, number> = {
+  steam: 5, boil: 5, raw: 2,
+  'stir-fry': 50, braise: 30, roast: 25, 'deep-fry': 80, cold: 15,
+};
+
+/** Validate AI oil estimate; return a reasonable value if the AI estimate looks wrong */
+function sanitizeOil(estimatedOil: number, cookingMethod: string | null): number {
+  const method = cookingMethod ?? 'stir-fry';
+  const max = OIL_MAX[method] ?? 50;
+  const defaultOil = DEFAULT_OIL_GRAMS[method] ?? 10;
+  if (estimatedOil <= 0 && defaultOil > 0) return defaultOil;
+  if (estimatedOil > max) return max;
+  return estimatedOil;
+}
+
 // Separator words used to split compound dish names into ingredients
 const DISH_SEPARATORS = [
   '炒', '烧', '炖', '煮', '蒸', '拌', '烩', '熘',
@@ -386,6 +458,17 @@ function calcPackaged(vf: VisionFoodItem): { nutrition: NutritionData; fromDB: b
 }
 
 /**
+ * Try to find a known ingredient ratio for a dish name.
+ * Returns the ratio map keyed by ingredient name, or null.
+ */
+function findDishRatio(dishName: string): Record<string, number> | null {
+  for (const key of Object.keys(DISH_RATIOS)) {
+    if (dishName.includes(key)) return DISH_RATIOS[key];
+  }
+  return null;
+}
+
+/**
  * Calculate nutrition by decomposing dish into ingredients.
  * Used when AI provides ingredients list for compound dishes.
  */
@@ -395,8 +478,8 @@ function calcFromIngredients(vf: VisionFoodItem): { nutrition: NutritionData; fr
     return { nutrition: fallbackEstimate(vf), fromDB: false };
   }
 
-  // Distribute weight equally among ingredients
-  const perIngredientWeight = vf.weight / ingredients.length;
+  // Try to find known ratios for this dish; fall back to equal distribution
+  const ratio = findDishRatio(vf.name.trim());
   const db = foodDb as Record<string, NutritionData>;
 
   let total: NutritionData = { protein: 0, carbs: 0, fat: 0, calories: 0 };
@@ -405,20 +488,23 @@ function calcFromIngredients(vf: VisionFoodItem): { nutrition: NutritionData; fr
   for (const ing of ingredients) {
     const food = db[ing] || findFood(ing);
     if (food) {
-      total.protein += food.protein * perIngredientWeight / 100;
-      total.carbs += food.carbs * perIngredientWeight / 100;
-      total.fat += food.fat * perIngredientWeight / 100;
-      total.calories += food.calories * perIngredientWeight / 100;
+      const ingWeight = ratio?.[ing]
+        ? vf.weight * ratio[ing]
+        : vf.weight / ingredients.length;
+      total.protein += food.protein * ingWeight / 100;
+      total.carbs += food.carbs * ingWeight / 100;
+      total.fat += food.fat * ingWeight / 100;
+      total.calories += food.calories * ingWeight / 100;
       foundCount++;
     }
   }
 
   if (foundCount === 0) return { nutrition: fallbackEstimate(vf), fromDB: false };
 
-  // Add oil contribution (assume stir-fry if cooking method not specified)
+  // Add oil contribution
   const method = vf.cookingMethod ?? 'stir-fry';
-  const ratio = (ratios as Record<string, typeof ratios['stir-fry']>)[method] ?? ratios['stir-fry'];
-  const oilFat = vf.estimatedOil * ratio.oilAbsorption;
+  const ratioData = (ratios as Record<string, typeof ratios['stir-fry']>)[method] ?? ratios['stir-fry'];
+  const oilFat = vf.estimatedOil * ratioData.oilAbsorption;
   total.fat += oilFat;
   total.calories += oilFat * 9;
 
@@ -434,11 +520,21 @@ function calcFromIngredients(vf: VisionFoodItem): { nutrition: NutritionData; fr
 }
 
 function fallbackEstimate(vf: VisionFoodItem): NutritionData {
+  const key = vf.category === 'dish'
+    ? `dish|${vf.cookingMethod ?? 'stir-fry'}`
+    : vf.category;
+  const density = FALLBACK_DENSITY[key] ?? FALLBACK_DENSITY['ingredient'];
+
+  const totalCal = vf.weight * density.calPerGram;
+  const protein = (totalCal * density.proteinPct) / 4;
+  const carbs = (totalCal * density.carbsPct) / 4;
+  const fat = (totalCal * density.fatPct) / 9;
+
   return {
-    protein: Math.round(vf.weight * 0.12) || 0,
-    carbs: Math.round(vf.weight * 0.15) || 0,
-    fat: Math.round(vf.weight * 0.08) || 0,
-    calories: Math.round(vf.weight * 1.8) || 0,
+    protein: Math.round(protein) || 0,
+    carbs: Math.round(carbs) || 0,
+    fat: Math.round(fat) || 0,
+    calories: Math.round(totalCal) || Math.round(vf.weight * 1.8),
   };
 }
 
@@ -448,7 +544,8 @@ export function visionToFoodItems(visionFoods: VisionFoodItem[]): FoodItem[] {
   return visionFoods.map((vf) => {
     // Defend against missing/invalid AI data
     const weight = typeof vf.weight === 'number' && vf.weight > 0 ? vf.weight : 100;
-    const estimatedOil = typeof vf.estimatedOil === 'number' ? vf.estimatedOil : 0;
+    const rawOil = typeof vf.estimatedOil === 'number' ? vf.estimatedOil : 0;
+    const estimatedOil = sanitizeOil(rawOil, vf.cookingMethod);
     const safeVf = { ...vf, weight, estimatedOil };
 
     let nutrition: NutritionData;
@@ -500,8 +597,12 @@ export function visionToFoodItems(visionFoods: VisionFoodItem[]): FoodItem[] {
       }
     }
 
-    // Dynamic uncertainty: ±10% for DB matches, ±30% for fallback
-    const uncertainty = fromDB ? 0.10 : 0.30;
+    // Dynamic uncertainty: combines DB match quality and weight confidence
+    const dbUncertainty = fromDB ? 0.10 : 0.30;
+    const weightConf = safeVf.weightConfidence ?? 'medium';
+    const weightUncertainty =
+      weightConf === 'high' ? 0.15 : weightConf === 'low' ? 0.40 : 0.25;
+    const uncertainty = Math.max(dbUncertainty, weightUncertainty);
 
     return {
       id: generateId(),

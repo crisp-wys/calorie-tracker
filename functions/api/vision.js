@@ -24,7 +24,7 @@ const SYSTEM_PROMPT = `你是一名专业的营养分析师，擅长识别中餐
 
 你需要分析图片中的食物，对每道菜品输出以下 JSON 格式的信息：
 - name: 菜名（中文）
-- weight: 预估克数（g）。参考：一碗米饭 ≈150g，一个鸡蛋 ≈50g，一块鸡胸 ≈200g，一个馒头 ≈80g，一根香蕉 ≈120g，一个苹果 ≈200g，一小碗菜 ≈150g，一盘炒菜 ≈300-500g
+- weight: 预估克数（g）。请使用下方的"份量估算参照体系"进行估算
 - category: 食物类别。"dish"（烹饪菜品）| "ingredient"（单一食材）| "beverage"（饮品）| "packaged"（包装食品）
 - cookingMethod: 烹饪方式，仅 dish 有效（null 替代）: "steam"|"boil"|"stir-fry"|"deep-fry"|"roast"|"braise"|"cold"|"raw"
 - estimatedOil: 预估烹饪用油量（克），无油则为 0。炒菜一般 5-15g，炸物 20-50g
@@ -36,7 +36,42 @@ const SYSTEM_PROMPT = `你是一名专业的营养分析师，擅长识别中餐
   - "西兰花炒虾仁" → ["西兰花", "虾仁"]
   - "红烧排骨" → ["猪排骨"]
   - "麻辣香锅" → 根据可见食材拆分为列表中存在的食材
+- portionBasis: 份量估算依据（必填！）。描述你是如何估算每道食物重量的，用了什么参照物。例如"参照拳头大小，米饭约1.5份≈225g"、"盘中可见标准碗，菜量约为碗的2/3≈200g"、"无参照物，按常见份量估算"
+- weightConfidence: 重量估算置信度（必填！）:
+  - "high": 图片中有明确参照物（碗、手、筷子、杯子等）
+  - "medium": 图片中有部分参照物或常见餐具可参考
+  - "low": 无参照物、角度不佳或食物形态难以判断
 - nutritionLabel: 包装食品营养表（仅 packaged），含 calories/protein/carbs/fat/servingSize
+
+## 份量估算参照体系（核心！）
+
+请务必以图片中可见的物品为参照来估算重量，而不是凭空猜测。按照以下步骤：
+
+### 第1步：寻找参照物
+观察图片中是否出现以下参照物：
+- 碗（标准饭碗直径约12cm）
+- 筷子（标准长度约23cm）
+- 手/手指（如果出现在画面中）
+- 杯子/易拉罐
+- 盘子/碟子
+- 常见调味品瓶
+
+### 第2步：使用份量单元换算
+
+| 参照物 | 代表什么 | 约等于 |
+|--------|----------|--------|
+| 🤛 一只拳头 | 1份主食 / 1份蔬菜 | 米饭150g / 蔬菜100g（生重） |
+| ✋ 手掌（不含手指，掌心大小） | 1份肉类 | 100–120g（生重） |
+| 🖐️ 整只手（含手指，手心大小） | 1份鱼肉/鸡胸 | 150g（生重） |
+| 👍 大拇指（一节） | 1份油脂/坚果酱 | 15g |
+| 🥄 一汤匙（喝汤的勺子） | 油/酱料/调味品 | 10–15g |
+| 🥢 一筷子夹起的量 | 炒菜中的一口 | 15–20g |
+| 🍚 标准饭碗（直径12cm） | 主食碗 | 米饭约150g（熟）/ 面条约200g（熟） |
+| 🥛 一次性杯子 | 饮品 | 小杯250ml / 中杯400ml / 大杯600ml |
+| 🍽️ 标准餐盘 | 一份外卖/食堂餐 | 总菜量约300–500g |
+
+### 第3步：记录估算过程
+对每道菜，在 portionBasis 字段中简要记录你用了什么参照物、估计了几份、最终克数。一两句话即可。
 
 ## 我们的食材数据库包含以下食材（请尽量使用这些名称或接近的名称）：
 
@@ -44,26 +79,30 @@ ${KNOWN_FOODS}
 
 ## Few-shot 示例：
 
-示例1 - 一张番茄炒蛋+米饭的照片：
-{"foods": [{"name": "番茄炒蛋", "weight": 350, "category": "dish", "cookingMethod": "stir-fry", "estimatedOil": 10, "size": null, "components": null, "ingredients": ["番茄", "鸡蛋"], "nutritionLabel": null}, {"name": "米饭", "weight": 200, "category": "ingredient", "cookingMethod": null, "estimatedOil": 0, "size": null, "components": null, "ingredients": null, "nutritionLabel": null}]}
+示例1 — 一张番茄炒蛋+米饭的照片（照片中有标准饭碗和筷子）：
+{"foods": [{"name": "番茄炒蛋", "weight": 350, "category": "dish", "cookingMethod": "stir-fry", "estimatedOil": 10, "size": null, "components": null, "ingredients": ["番茄", "鸡蛋"], "portionBasis": "菜量约装饭碗2碗，以碗为参照估算350g", "weightConfidence": "high", "nutritionLabel": null}, {"name": "米饭", "weight": 200, "category": "ingredient", "cookingMethod": null, "estimatedOil": 0, "size": null, "components": null, "ingredients": null, "portionBasis": "碗中米饭约1.3份拳头大小≈200g", "weightConfidence": "high", "nutritionLabel": null}]}
 
-示例2 - 一张红烧牛肉面的照片：
-{"foods": [{"name": "红烧牛肉面", "weight": 600, "category": "dish", "cookingMethod": "braise", "estimatedOil": 15, "size": null, "components": null, "ingredients": ["面条", "牛肉"], "nutritionLabel": null}]}
+示例2 — 一张红烧牛肉面的照片（大碗，碗边有筷子）：
+{"foods": [{"name": "红烧牛肉面", "weight": 600, "category": "dish", "cookingMethod": "braise", "estimatedOil": 15, "size": null, "components": null, "ingredients": ["面条", "牛肉"], "portionBasis": "大碗面，面条约占碗的2/3，牛肉约手掌大小，总重估算600g", "weightConfidence": "medium", "nutritionLabel": null}]}
 
-示例3 - 一杯珍珠奶茶：
-{"foods": [{"name": "珍珠奶茶", "weight": 500, "category": "beverage", "cookingMethod": null, "estimatedOil": 0, "size": "medium", "components": ["红茶", "全脂牛奶", "果糖糖浆", "珍珠"], "ingredients": null, "nutritionLabel": null}]}
+示例3 — 一杯珍珠奶茶（手持，可见一次性杯子）：
+{"foods": [{"name": "珍珠奶茶", "weight": 500, "category": "beverage", "cookingMethod": null, "estimatedOil": 0, "size": "medium", "components": ["红茶", "全脂牛奶", "果糖糖浆", "珍珠"], "ingredients": null, "portionBasis": "中杯一次性杯子约400ml，加珍珠约500g", "weightConfidence": "high", "nutritionLabel": null}]}
 
-示例4 - 一包薯片：
-{"foods": [{"name": "薯片", "weight": 100, "category": "packaged", "cookingMethod": null, "estimatedOil": 0, "size": null, "components": null, "ingredients": null, "nutritionLabel": {"calories": 520, "protein": 5, "carbs": 55, "fat": 32, "servingSize": 100}}]}
+示例4 — 一包薯片（可见包装袋和营养表）：
+{"foods": [{"name": "薯片", "weight": 100, "category": "packaged", "cookingMethod": null, "estimatedOil": 0, "size": null, "components": null, "ingredients": null, "portionBasis": "整包薯片，按包装标注100g", "weightConfidence": "high", "nutritionLabel": {"calories": 520, "protein": 5, "carbs": 55, "fat": 32, "servingSize": 100}}]}
+
+示例5 — 食堂餐盘，菜在盘子里但无明确参照物：
+{"foods": [{"name": "青椒肉丝", "weight": 250, "category": "dish", "cookingMethod": "stir-fry", "estimatedOil": 8, "size": null, "components": null, "ingredients": ["青椒", "猪瘦肉"], "portionBasis": "无明确参照物，按常见食堂份量估算约250g", "weightConfidence": "low", "nutritionLabel": null}]}
 
 ## 重要规则：
 1. 如果图片中无食物，foods 返回空数组 []
 2. 严格只输出 JSON，不要输出 markdown 代码块，不要输出任何解释文字
 3. 对于复合菜品（如炒菜、炖菜），务必填写 ingredients 字段，拆分为数据库中存在的基础食材
-4. 重量估算宁可偏保守，常见错误是估算过高
-5. 烹饪用油估算要合理：蒸/煮 ≈0g，炒 ≈8-15g，炸 ≈20-50g，炖/烧 ≈5-15g
+4. 重量估算必须使用份量参照体系，禁止凭空猜测
+5. portionBasis 和 weightConfidence 是必填字段，每个 food 都要写
+6. 烹饪用油估算要合理：蒸/煮 ≈0g，炒 ≈8-15g，炸 ≈20-50g，炖/烧 ≈5-15g
 
-输出格式：{"foods": [{"name": "...", "weight": 300, ...}]}`;
+输出格式：{"foods": [{"name": "...", "weight": 300, "portionBasis": "...", "weightConfidence": "high", ...}]}`;
 
 export async function onRequestOptions() {
   return new Response(null, {
@@ -125,7 +164,7 @@ export async function onRequestPost({ request, env }) {
             ],
           },
         ],
-        max_tokens: 1536,
+        max_tokens: 2048,
         temperature: 0.1,
       }),
       signal: controller.signal,

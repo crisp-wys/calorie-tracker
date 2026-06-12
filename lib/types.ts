@@ -78,6 +78,10 @@ export interface VisionFoodItem {
   components: string[] | null;
   /** 复合菜品的食材拆解，如"番茄炒蛋" → ["番茄", "鸡蛋"]，便于本地数据库查表计算 */
   ingredients: string[] | null;
+  /** 份量估算依据描述，如"参照拳头大小，米饭约1.5份≈225g" */
+  portionBasis?: string | null;
+  /** AI 对重量估算的置信度：high=有明确参照物, medium=部分参照, low=无参照 */
+  weightConfidence?: 'high' | 'medium' | 'low' | null;
   nutritionLabel: {
     calories: number;
     protein: number;
