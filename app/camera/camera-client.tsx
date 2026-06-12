@@ -4,13 +4,11 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertTriangle, Salad } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
-import { MEAL_LABELS, type MealType, type VisionFoodItem, type FoodItem } from '@/lib/types';
+import { MEAL_LABELS, MEAL_ORDER, type MealType, type VisionFoodItem, type FoodItem } from '@/lib/types';
 import { visionToFoodItems, recalculateByName } from '@/lib/nutrition';
 import { generateId } from '@/lib/utils';
 import PhotoCapture from '@/components/PhotoCapture';
 import FoodCard from '@/components/FoodCard';
-
-const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 
 function suggestMealType(): MealType {
   const hour = new Date().getHours();
@@ -167,7 +165,7 @@ export default function CameraClient() {
         <AlertTriangle className="h-10 w-10 text-yellow-500" />
         <p className="text-sm text-[#8A7B6B] text-center">请先在设置中填写个人代谢画像</p>
         <button
-          onClick={() => router.push('/settings')}
+          onClick={() => router.push('/calendar/settings')}
           className="rounded-xl bg-[#D95959] px-6 py-2 text-sm font-medium text-white shadow-md shadow-[#D95959]/20 transition-all active:shadow-sm active:brightness-90"
         >
           前往设置

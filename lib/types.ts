@@ -19,6 +19,8 @@ export const MEAL_LABELS: Record<MealType, string> = {
   snack: '加餐',
 };
 
+export const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
+
 export const COOKING_LABELS: Record<CookingMethod, string> = {
   'steam': '蒸',
   'boil': '煮',
@@ -65,6 +67,20 @@ export interface UserProfile {
 export interface AppState {
   profile: UserProfile | null;
   meals: MealRecord[];
+  workouts: WorkoutRecord[];
+}
+
+export interface WorkoutRecord {
+  id: string;
+  date: string;        // YYYY-MM-DD
+  bodyPart: string;    // '胸' | '背' | '肩' | '手臂' | '腿' | '核心' | '有氧'
+  exercise: string;    // 动作名
+  sets: number;        // 组数（有氧填 0）
+  reps: number;        // 次数（有氧填 0）
+  weight: number;      // 重量kg（自重/有氧填 0）
+  duration: number;    // 分钟，力量自动估算，有氧手动填
+  calories: number;    // 估算消耗（已打8折）
+  createdAt: string;
 }
 
 // Qwen VL returns raw food descriptions

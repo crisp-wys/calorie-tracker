@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
 import { buildProfile, calculateTDEE, type GoalType, GOAL_LABELS } from '@/lib/tdee';
 import { ACTIVITY_LABELS, type Gender, type ActivityLevel } from '@/lib/types';
 
 export default function SettingsPage() {
   const { state, dispatch } = useApp();
+  const router = useRouter();
 
   const [height, setHeight] = useState(state.profile?.height ?? 170);
   const [weight, setWeight] = useState(state.profile?.weight ?? 70);
@@ -42,27 +45,39 @@ export default function SettingsPage() {
 
   return (
     <div className="px-4 pt-6 pb-4">
-      <h1 className="text-xl font-extrabold mb-6">个人代谢画像</h1>
+      {/* Header with back arrow */}
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          onClick={() => router.push('/calendar')}
+          className="h-9 w-9 rounded-xl bg-[#FAF6F0] border border-[#E8DDD0] flex items-center justify-center text-[#8A7B6B] hover:text-[#D95959] hover:border-[#D95959]/30 transition-colors"
+        >
+          <ArrowLeft className="h-4.5 w-4.5" />
+        </button>
+        <h1 className="text-xl font-extrabold" style={{ fontFamily: 'var(--font-zcool-xiaowei)' }}>
+          个人代谢画像
+        </h1>
+      </div>
 
       <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-[#8A7B6B] mb-1.5">身高 (cm)</label>
-          <input
-            type="number"
-            value={height}
-            onChange={(e) => setHeight(Number(e.target.value))}
-            className="w-full rounded-xl border border-[#E8DDD0] bg-[#FAF6F0] p-3.5 text-base transition-colors focus:bg-white focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-[#8A7B6B] mb-1.5">体重 (kg)</label>
-          <input
-            type="number"
-            value={weight}
-            onChange={(e) => setWeight(Number(e.target.value))}
-            className="w-full rounded-xl border border-[#E8DDD0] bg-[#FAF6F0] p-3.5 text-base transition-colors focus:bg-white focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
-          />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-[#8A7B6B] mb-1.5">身高 (cm)</label>
+            <input
+              type="number"
+              value={height}
+              onChange={(e) => setHeight(Number(e.target.value))}
+              className="w-full rounded-xl border border-[#E8DDD0] bg-[#FAF6F0] p-3 text-base transition-colors focus:bg-white focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#8A7B6B] mb-1.5">体重 (kg)</label>
+            <input
+              type="number"
+              value={weight}
+              onChange={(e) => setWeight(Number(e.target.value))}
+              className="w-full rounded-xl border border-[#E8DDD0] bg-[#FAF6F0] p-3 text-base transition-colors focus:bg-white focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
+            />
+          </div>
         </div>
 
         <div>
@@ -71,7 +86,7 @@ export default function SettingsPage() {
             type="number"
             value={age}
             onChange={(e) => setAge(Number(e.target.value))}
-            className="w-full rounded-xl border border-[#E8DDD0] bg-[#FAF6F0] p-3.5 text-base transition-colors focus:bg-white focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
+            className="w-full rounded-xl border border-[#E8DDD0] bg-[#FAF6F0] p-3 text-base transition-colors focus:bg-white focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
           />
         </div>
 
@@ -82,7 +97,7 @@ export default function SettingsPage() {
               <button
                 key={g}
                 onClick={() => setGender(g)}
-                className={`flex-1 rounded-xl border p-3.5 text-sm font-medium transition-all ${
+                className={`flex-1 rounded-xl border p-3 text-sm font-medium transition-all ${
                   gender === g
                     ? 'border-[#D95959] bg-[#D95959]/10 text-[#D95959] shadow-sm shadow-[#D95959]/10'
                     : 'border-[#E8DDD0] text-[#8A7B6B] hover:border-gray-300'
@@ -99,7 +114,7 @@ export default function SettingsPage() {
           <select
             value={activityLevel}
             onChange={(e) => setActivityLevel(Number(e.target.value) as ActivityLevel)}
-            className="w-full rounded-xl border border-[#E8DDD0] bg-[#FAF6F0] p-3.5 text-base transition-colors focus:bg-white focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
+            className="w-full rounded-xl border border-[#E8DDD0] bg-[#FAF6F0] p-3 text-base transition-colors focus:bg-white focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
           >
             {(Object.entries(ACTIVITY_LABELS) as [string, string][]).map(([val, label]) => (
               <option key={val} value={val}>
@@ -116,7 +131,7 @@ export default function SettingsPage() {
               <button
                 key={val}
                 onClick={() => setGoalType(val as GoalType)}
-                className={`flex-1 rounded-xl border p-3.5 text-sm font-medium transition-all ${
+                className={`flex-1 rounded-xl border p-3 text-sm font-medium transition-all ${
                   goalType === val
                     ? 'border-[#D95959] bg-[#D95959]/10 text-[#D95959] shadow-sm shadow-[#D95959]/10'
                     : 'border-[#E8DDD0] text-[#8A7B6B] hover:border-gray-300'
@@ -129,7 +144,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl bg-[#D95959]/10 p-5 text-center">
+      <div className="mt-5 rounded-2xl bg-[#D95959]/10 p-5 text-center">
         <div className="text-sm text-[#D95959]">
           TDEE: <span className="font-bold text-lg">{tdee}</span> kcal
         </div>

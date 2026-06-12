@@ -1,8 +1,6 @@
 import type { Alert, MealRecord, MealType } from './types';
 import { getDailySummaries, type DailySummary } from './utils';
 
-// ── Helpers ──────────────────────────────────────────────────────
-
 // ── Rule 1: Consecutive calorie over ─────────────────────────────
 
 function checkCalorieOver(summaries: DailySummary[], target: number): Alert | null {
@@ -12,9 +10,9 @@ function checkCalorieOver(summaries: DailySummary[], target: number): Alert | nu
     if (d.calories > target * 1.1) {
       streak++;
       if (streak >= 3) {
+        const overDays = sorted.filter((x) => x.calories > target * 1.1);
         const avg = Math.round(
-          sorted.filter((x) => x.calories > target * 1.1).reduce((s, x) => s + x.calories, 0) /
-            sorted.filter((x) => x.calories > target * 1.1).length
+          overDays.reduce((s, x) => s + x.calories, 0) / overDays.length
         );
         return {
           type: 'calorie_over',
@@ -89,7 +87,7 @@ function checkMacroImbalance(summaries: DailySummary[]): Alert | null {
       emoji: '🍚',
     };
   }
-  if (proteinPct < MACRO_TARGETS.protein.min - 0.15) {
+  if (proteinPct < MACRO_TARGETS.protein.min) {
     return {
       type: 'macro_imbalance',
       title: `蛋白质摄入不足（${Math.round(proteinPct * 100)}%）`,
@@ -156,14 +154,14 @@ function checkMealSpike(summaries: DailySummary[], target: number): Alert | null
 // ── Main entry ────────────────────────────────────────────────────
 
 /**
- * Calculate all active alerts from meal data and user profile.
- * Pure function — no side effects, no API calls.
- * Returns alerts in priority order (calorie issues first).
+ * Calculate all active alerts from meal data.
+ * @param meals All meal records
+ * @param target Dynamic daily calorie target (already adjusted for exercise)
+ * @param hasProfile Whether user has completed onboarding
  */
-export function calcAlerts(meals: MealRecord[], profile: { dailyTarget: number } | null): Alert[] {
-  if (!profile || meals.length === 0) return [];
+export function calcAlerts(meals: MealRecord[], target: number, hasProfile: boolean): Alert[] {
+  if (!hasProfile || meals.length === 0) return [];
 
-  const target = profile.dailyTarget;
   const summaries = getDailySummaries(meals, 7);
   if (summaries.length === 0) return [];
 

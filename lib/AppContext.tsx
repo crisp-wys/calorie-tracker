@@ -1,10 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, useRef, useState, ReactNode } from 'react';
-import { AppState, UserProfile, MealRecord, FoodItem } from './types';
+import { AppState, UserProfile, MealRecord, FoodItem, WorkoutRecord } from './types';
 import { loadState, saveState } from './db';
 
-const EMPTY_STATE: AppState = { profile: null, meals: [] };
+const EMPTY_STATE: AppState = { profile: null, meals: [], workouts: [] };
 
 type Action =
   | { type: 'SET_PROFILE'; profile: UserProfile }
@@ -12,6 +12,8 @@ type Action =
   | { type: 'UPDATE_MEAL'; meal: MealRecord }
   | { type: 'DELETE_MEAL'; id: string }
   | { type: 'UPDATE_FOOD'; mealId: string; food: FoodItem }
+  | { type: 'ADD_WORKOUT'; workout: WorkoutRecord }
+  | { type: 'DELETE_WORKOUT'; id: string }
   | { type: 'LOAD_STATE'; state: AppState };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -33,6 +35,12 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'DELETE_MEAL':
       return { ...state, meals: state.meals.filter((m) => m.id !== action.id) };
+
+    case 'ADD_WORKOUT':
+      return { ...state, workouts: [...state.workouts, action.workout] };
+
+    case 'DELETE_WORKOUT':
+      return { ...state, workouts: state.workouts.filter((w) => w.id !== action.id) };
 
     case 'UPDATE_FOOD': {
       const updatedMeals = state.meals.map((meal) => {
@@ -65,6 +73,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const isFirstRender = useRef(true);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stateRef = useRef(state);
+  stateRef.current = state; // keep ref in sync for beforeunload flush
 
   // Initial load from Supabase
   useEffect(() => {
@@ -95,7 +105,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const flush = () => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
-        saveState(state); // fire-and-forget on unload
+        saveState(stateRef.current); // use ref to avoid stale closure
       }
     };
     window.addEventListener('beforeunload', flush);
@@ -104,7 +114,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       window.removeEventListener('beforeunload', flush);
       window.removeEventListener('pagehide', flush);
     };
-  }, [state]);
+  }, []);
 
   return React.createElement(AppContext.Provider, { value: { state, loading, dispatch } }, children);
 }

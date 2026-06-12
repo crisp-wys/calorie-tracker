@@ -1,6 +1,5 @@
 'use client';
 
-import type { Alert } from '@/lib/types';
 import { memo } from 'react';
 
 interface CalendarGridProps {

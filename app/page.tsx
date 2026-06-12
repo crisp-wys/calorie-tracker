@@ -2,16 +2,17 @@
 
 import { useMemo } from 'react';
 import { useApp } from '@/lib/AppContext';
-import { type MealType } from '@/lib/types';
+import { MEAL_ORDER } from '@/lib/types';
 import { calcAvgCalories } from '@/lib/utils';
+import { calcDynamicTarget } from '@/lib/tdee';
+import { sumTodayWorkoutCalories } from '@/lib/workout-utils';
 import RingProgress from '@/components/RingProgress';
 import MacroBars from '@/components/MacroBar';
 import MealSection from '@/components/MealSection';
 import OnboardingWizard from '@/components/OnboardingWizard';
 import { calcAlerts } from '@/lib/alerts';
 import AlertBannerList from '@/components/AlertBannerList';
-
-const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
+import CalorieTrend from '@/components/CalorieTrend';
 
 export default function DashboardPage() {
   const { state, loading } = useApp();
@@ -57,9 +58,21 @@ export default function DashboardPage() {
     };
   }, [meals, today]);
 
-  const alerts = useMemo(() => calcAlerts(meals, profile), [meals, profile]);
+  // Dynamic daily target = base target + today's exercise calories × 0.8
+  const todayExerciseCals = useMemo(
+    () => sumTodayWorkoutCalories(state.workouts),
+    [state.workouts]
+  );
+  const baseTarget = profile?.dailyTarget ?? 2000;
+  const { effectiveTarget: dailyTarget } = useMemo(
+    () => calcDynamicTarget(baseTarget, todayExerciseCals),
+    [baseTarget, todayExerciseCals]
+  );
 
-  const dailyTarget = profile?.dailyTarget ?? 2000;
+  const alerts = useMemo(
+    () => calcAlerts(meals, dailyTarget, !!profile),
+    [meals, dailyTarget, profile]
+  );
 
   const proteinTarget = Math.round((dailyTarget * 0.3) / 4);
   const carbsTarget = Math.round((dailyTarget * 0.4) / 4);
@@ -81,6 +94,8 @@ export default function DashboardPage() {
           window.dispatchEvent(new CustomEvent('open-coach-chat', { detail: prefill }));
         }}
       />
+
+      <CalorieTrend />
 
       <div className="flex justify-center pt-2 pb-2">
         <RingProgress current={roundedCalories} target={dailyTarget} />

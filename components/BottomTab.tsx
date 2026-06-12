@@ -2,13 +2,13 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, Camera, Calendar, Settings } from 'lucide-react';
+import { LayoutDashboard, Camera, Calendar, Dumbbell } from 'lucide-react';
 
 const tabs = [
   { path: '/', label: '看板', icon: LayoutDashboard },
   { path: '/camera', label: '拍照', icon: Camera },
+  { path: '/fitness', label: '健身', icon: Dumbbell },
   { path: '/calendar', label: '日历', icon: Calendar },
-  { path: '/settings', label: '设置', icon: Settings },
 ];
 
 export default function BottomTab() {

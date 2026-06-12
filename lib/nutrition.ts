@@ -107,7 +107,6 @@ const DISH_SEPARATORS = [
 
 // Normalize aliases to DB keys
 const NAME_ALIASES: Record<string, string> = {
-  '番茄': '番茄',
   '西红柿': '番茄',
   '马铃薯': '土豆',
   '洋芋': '土豆',

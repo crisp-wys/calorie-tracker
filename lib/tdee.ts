@@ -3,11 +3,11 @@ import { Gender, ActivityLevel, UserProfile } from './types';
 export type GoalType = 'lose' | 'maintain' | 'gain';
 
 const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, number> = {
-  1: 1.2,
-  2: 1.375,
-  3: 1.55,
-  4: 1.725,
-  5: 1.9,
+  1: 1.20,
+  2: 1.25,
+  3: 1.30,
+  4: 1.35,
+  5: 1.40,
 };
 
 export const GOAL_OFFSETS: Record<GoalType, number> = {
@@ -36,10 +36,29 @@ export function calculateTDEE(
       ? 10 * weight + 6.25 * height - 5 * age + 5
       : 10 * weight + 6.25 * height - 5 * age - 161;
 
+  // NEAT = baseline living without exercise. Activity level now captures
+  // non-exercise activity (job, walking, fidgeting). Exercise is tracked
+  // separately and added dynamically via calcDynamicTarget().
   const tdee = Math.round(bmr * ACTIVITY_MULTIPLIERS[activityLevel]);
   const dailyTarget = Math.max(tdee + GOAL_OFFSETS[goalType], 1200);
 
   return { bmr: Math.round(bmr), tdee, dailyTarget };
+}
+
+/**
+ * Compute the effective daily calorie target including today's exercise.
+ * Exercise calories are discounted by 0.8 to avoid overestimation common
+ * in MET-based calculations.
+ */
+export function calcDynamicTarget(
+  baseTarget: number,
+  exerciseCalories: number,
+): { effectiveTarget: number; exerciseCals: number } {
+  const exerciseCals = Math.round(exerciseCalories * 0.8);
+  return {
+    effectiveTarget: baseTarget + exerciseCals,
+    exerciseCals,
+  };
 }
 
 export function buildProfile(

@@ -7,6 +7,7 @@ import { getDefaultMemory } from './user-memory';
 const EMPTY_STATE: AppState = {
   profile: null,
   meals: [],
+  workouts: [],
 };
 
 export async function loadState(): Promise<AppState> {
@@ -14,7 +15,7 @@ export async function loadState(): Promise<AppState> {
     const deviceId = getDeviceId();
     const { data, error } = await supabase
       .from('app_state')
-      .select('profile, meals')
+      .select('profile, meals, workouts')
       .eq('device_id', deviceId)
       .maybeSingle();
 
@@ -23,6 +24,7 @@ export async function loadState(): Promise<AppState> {
     return {
       profile: (data.profile as AppState['profile']) ?? null,
       meals: (data.meals as AppState['meals']) ?? [],
+      workouts: (data.workouts as AppState['workouts']) ?? [],
     };
   } catch {
     return EMPTY_STATE;
@@ -36,6 +38,7 @@ export async function saveState(state: AppState): Promise<void> {
       device_id: deviceId,
       profile: state.profile,
       meals: state.meals,
+      workouts: state.workouts,
       updated_at: new Date().toISOString(),
     });
   } catch {

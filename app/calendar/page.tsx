@@ -1,14 +1,18 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ChevronLeft, ChevronRight, Settings } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
 import { calcAvgCalories } from '@/lib/utils';
+import { calcDynamicTarget } from '@/lib/tdee';
+import { getWorkoutCaloriesByDate } from '@/lib/workout-utils';
 import CalendarGrid from '@/components/CalendarGrid';
 
 export default function CalendarPage() {
   const { state } = useApp();
   const { profile } = state;
+  const router = useRouter();
 
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
@@ -26,8 +30,18 @@ export default function CalendarPage() {
     return map;
   }, [state.meals]);
 
+  const dateWorkouts = useMemo(
+    () => getWorkoutCaloriesByDate(state.workouts),
+    [state.workouts]
+  );
+
   const selectedCalories = Math.round(dateMeals.get(selected) ?? 0);
-  const target = profile?.dailyTarget ?? 2000;
+  const selectedWorkoutCals = dateWorkouts.get(selected) ?? 0;
+  const baseTarget = profile?.dailyTarget ?? 2000;
+  const { effectiveTarget: target } = useMemo(
+    () => calcDynamicTarget(baseTarget, selectedWorkoutCals),
+    [baseTarget, selectedWorkoutCals]
+  );
   const isOver = selectedCalories > target;
 
   const prevMonth = () => {
@@ -52,7 +66,15 @@ export default function CalendarPage() {
 
   return (
     <div className="px-4 pt-6 pb-4 space-y-4">
-      <h1 className="text-xl font-extrabold" style={{ fontFamily: 'var(--font-zcool-xiaowei)' }}>饮食日历</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-extrabold" style={{ fontFamily: 'var(--font-zcool-xiaowei)' }}>饮食日历</h1>
+        <button
+          onClick={() => router.push('/calendar/settings')}
+          className="h-9 w-9 rounded-xl bg-[#FAF6F0] border border-[#E8DDD0] flex items-center justify-center text-[#C4B5A5] hover:text-[#D95959] hover:border-[#D95959]/30 transition-colors"
+        >
+          <Settings className="h-4.5 w-4.5" />
+        </button>
+      </div>
 
       <div className="flex items-center justify-between">
         <button onClick={prevMonth} className="p-1 text-[#C4B5A5]">
@@ -78,6 +100,11 @@ export default function CalendarPage() {
           <span className="text-xl font-bold tabular-nums">{selectedCalories}</span>
           <span className="text-sm text-[#C4B5A5]">/ {target} kcal</span>
         </div>
+        {selectedWorkoutCals > 0 && (
+          <div className="mt-1 text-xs text-[#D95959]">
+            🔥 运动消耗 {selectedWorkoutCals} kcal · 目标已调整
+          </div>
+        )}
         <div className={`mt-1 text-sm ${isOver ? 'text-red-500' : 'text-brand'}`}>
           {selectedCalories === 0
             ? selected === todayStr
