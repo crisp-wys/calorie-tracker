@@ -36,7 +36,7 @@ const FoodCard = memo(function FoodCard({ food, mealId, readonly = false, onEdit
             {!readonly && (
               <button
                 onClick={() => setEditing(true)}
-                className="text-[#C4B5A5] opacity-0 group-hover:opacity-100 transition-opacity"
+                className="text-[#C4B5A5] opacity-60 active:opacity-100 hover:opacity-100 transition-opacity"
               >
                 <Pencil className="h-3.5 w-3.5" />
               </button>
