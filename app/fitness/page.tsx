@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useApp } from '@/lib/AppContext';
+import { getLocalDateString } from '@/lib/utils';
 import { BODY_PARTS, calcStrengthCalories, calcCardioCalories, sumTodayWorkoutCalories } from '@/lib/workout-utils';
 import { calcDynamicTarget } from '@/lib/tdee';
 import { Trash2 } from 'lucide-react';
@@ -10,7 +11,7 @@ import type { WorkoutRecord } from '@/lib/types';
 export default function FitnessPage() {
   const { state, dispatch } = useApp();
   const profile = state.profile;
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
 
   // Form state
   const [selectedPart, setSelectedPart] = useState<string>(BODY_PARTS[0].key);

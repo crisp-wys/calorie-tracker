@@ -41,6 +41,8 @@ export interface FoodItem {
   protein: number;
   carbs: number;
   fat: number;
+  /** Preserved from AI recognition — used when recalculating after user edits */
+  cookingMethod?: CookingMethod | null;
 }
 
 export interface MealRecord {

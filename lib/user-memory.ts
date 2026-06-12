@@ -3,7 +3,7 @@ import type {
   AppState,
 } from './types';
 import { DEFAULT_AI_CONFIG } from './types';
-import { calcAvgCalories, getDailySummaries } from './utils';
+import { calcAvgCalories, getDailySummaries, getLocalDateString } from './utils';
 
 const ENCOURAGING_PROMPT = `你是一个温暖、友好、充满正能量的健身与营养教练。
 核心风格：
@@ -50,7 +50,7 @@ export function getDefaultMemory(): UserMemory {
 
 export function needsMemoryUpdate(memory: UserMemory): boolean {
   if (memory.lastSummaryDate === null) return true;
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
   return memory.lastSummaryDate !== today;
 }
 
@@ -86,7 +86,7 @@ export function buildSystemPrompt(
     prompt += `\n\n【用户画像】\n身高：${profile.height}cm\n体重：${profile.weight}kg\n年龄：${profile.age}岁\n性别：${profile.gender === 'male' ? '男' : '女'}\n每日目标热量：${profile.dailyTarget}kcal\nTDEE：${profile.tdee}kcal`;
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
   const todayMeals = state.meals.filter((m) => m.date === today);
   const mealLabels: Record<string, string> = {
     breakfast: '早餐', lunch: '午餐', dinner: '晚餐', snack: '加餐',

@@ -1,6 +1,7 @@
 'use client';
 
 import { memo } from 'react';
+import { getLocalDateString } from '@/lib/utils';
 
 interface CalendarGridProps {
   year: number;
@@ -16,7 +17,7 @@ const CalendarGrid = memo(function CalendarGrid({ year, month, dateMeals, select
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDayOfWeek = new Date(year, month, 1).getDay();
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
 
   const cells: (number | null)[] = [];
   for (let i = 0; i < firstDayOfWeek; i++) cells.push(null);

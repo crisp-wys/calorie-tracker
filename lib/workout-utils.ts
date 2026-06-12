@@ -118,7 +118,8 @@ export function calcCardioCalories(
 
 /** Sum today's workout calories from a list of records */
 export function sumTodayWorkoutCalories(workouts: { date: string; calories: number }[]): number {
-  const today = new Date().toISOString().split('T')[0];
+  const d = new Date();
+  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   return workouts
     .filter((w) => w.date === today)
     .reduce((sum, w) => sum + w.calories, 0);

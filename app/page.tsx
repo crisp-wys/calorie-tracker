@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useApp } from '@/lib/AppContext';
 import { MEAL_ORDER } from '@/lib/types';
-import { calcAvgCalories } from '@/lib/utils';
+import { calcAvgCalories, getLocalDateString } from '@/lib/utils';
 import { calcDynamicTarget } from '@/lib/tdee';
 import { sumTodayWorkoutCalories } from '@/lib/workout-utils';
 import RingProgress from '@/components/RingProgress';
@@ -15,7 +15,7 @@ import AlertBannerList from '@/components/AlertBannerList';
 import CalorieTrend from '@/components/CalorieTrend';
 
 export default function DashboardPage() {
-  const { state, loading } = useApp();
+  const { state, loading, loadError } = useApp();
   const { profile, meals } = state;
 
   // Show loading spinner while fetching from Supabase
@@ -30,11 +30,28 @@ export default function DashboardPage() {
     );
   }
 
+  // Load failed with no profile and no cache → show error with retry
+  if (!profile && loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen px-6 space-y-4">
+        <p className="text-5xl">😵</p>
+        <p className="text-sm text-[#8A7B6B] text-center">无法连接到服务器</p>
+        <p className="text-xs text-[#C4B5A5] text-center">{loadError}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="rounded-xl bg-[#D95959] px-6 py-3 text-sm font-bold text-white shadow-md shadow-[#D95959]/20"
+        >
+          重试
+        </button>
+      </div>
+    );
+  }
+
   if (!profile) {
     return <OnboardingWizard />;
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
 
   const { todayMeals, totalCalories, roundedCalories, macros } = useMemo(() => {
     const todayMeals = meals.filter((m) => m.date === today);
@@ -87,6 +104,12 @@ export default function DashboardPage() {
   return (
     <div className="px-4 pt-6 pb-4 space-y-4">
       <h1 className="text-sm text-gray-400 tracking-wide">{dateStr}</h1>
+
+      {loadError && profile && (
+        <div className="rounded-xl bg-yellow-50 border border-yellow-200 px-4 py-2.5 text-xs text-yellow-700">
+          ⚠️ 数据同步失败，当前显示的是本地缓存。{loadError}
+        </div>
+      )}
 
       <AlertBannerList
         alerts={alerts}

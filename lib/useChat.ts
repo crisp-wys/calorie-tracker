@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import type { ChatMessage, AIConfig, UserMemory } from './types';
 import { loadMemory, saveMemory, uploadAvatar } from './db';
 import { needsMemoryUpdate, buildSystemPrompt, getDefaultMemory } from './user-memory';
-import { calcAvgCalories } from './utils';
+import { calcAvgCalories, getLocalDateString } from './utils';
 import { compressImage } from './image-compress';
 import { useApp } from './AppContext';
 import { CUSTOM_AVATAR_PREFIX } from './chat-utils';
@@ -58,7 +58,7 @@ export function useChat() {
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const update = JSON.parse(jsonMatch[0]);
-          const today = new Date().toISOString().split('T')[0];
+          const today = getLocalDateString();
           const newMemory: UserMemory = {
             ...memory,
             insights: (update.insights || memory.insights) as UserMemory['insights'],
@@ -206,7 +206,7 @@ export function useChat() {
   };
 
   const getAutoInsight = (): string => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString();
     const todayMeals = state.meals.filter((m) => m.date === today);
     if (todayMeals.length === 0) return '今天还没记录饮食哦，快来记录第一餐吧～';
     const totalCal = Math.round(

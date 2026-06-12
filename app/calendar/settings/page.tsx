@@ -36,6 +36,11 @@ export default function SettingsPage() {
 
   const { tdee, dailyTarget } = calculateTDEE(height, weight, age, gender, activityLevel, goalType);
 
+  const heightOk = height >= 100 && height <= 250;
+  const weightOk = weight >= 30 && weight <= 300;
+  const ageOk = age >= 10 && age <= 120;
+  const metricsValid = heightOk && weightOk && ageOk;
+
   const handleSave = () => {
     const profile = buildProfile(height, weight, age, gender, activityLevel, goalType);
     dispatch({ type: 'SET_PROFILE', profile });
@@ -44,7 +49,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="px-4 pt-6 pb-4">
+    <div className="px-4 pt-6 pb-24 overflow-y-auto h-full">
       {/* Header with back arrow */}
       <div className="flex items-center gap-3 mb-6">
         <button
@@ -65,18 +70,26 @@ export default function SettingsPage() {
             <input
               type="number"
               value={height}
+              min={100} max={250}
               onChange={(e) => setHeight(Number(e.target.value))}
-              className="w-full rounded-xl border border-[#E8DDD0] bg-[#FAF6F0] p-3 text-base transition-colors focus:bg-white focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
+              className={`w-full rounded-xl border bg-[#FAF6F0] p-3 text-base transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#D95959]/10 ${
+                heightOk ? 'border-[#E8DDD0] focus:border-[#D95959]' : 'border-red-300 focus:border-red-400'
+              }`}
             />
+            {!heightOk && <p className="text-xs text-red-500 mt-1">100-250 cm</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-[#8A7B6B] mb-1.5">体重 (kg)</label>
             <input
               type="number"
               value={weight}
+              min={30} max={300}
               onChange={(e) => setWeight(Number(e.target.value))}
-              className="w-full rounded-xl border border-[#E8DDD0] bg-[#FAF6F0] p-3 text-base transition-colors focus:bg-white focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
+              className={`w-full rounded-xl border bg-[#FAF6F0] p-3 text-base transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#D95959]/10 ${
+                weightOk ? 'border-[#E8DDD0] focus:border-[#D95959]' : 'border-red-300 focus:border-red-400'
+              }`}
             />
+            {!weightOk && <p className="text-xs text-red-500 mt-1">30-300 kg</p>}
           </div>
         </div>
 
@@ -85,9 +98,13 @@ export default function SettingsPage() {
           <input
             type="number"
             value={age}
+            min={10} max={120}
             onChange={(e) => setAge(Number(e.target.value))}
-            className="w-full rounded-xl border border-[#E8DDD0] bg-[#FAF6F0] p-3 text-base transition-colors focus:bg-white focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
+            className={`w-full rounded-xl border bg-[#FAF6F0] p-3 text-base transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#D95959]/10 ${
+              ageOk ? 'border-[#E8DDD0] focus:border-[#D95959]' : 'border-red-300 focus:border-red-400'
+            }`}
           />
+          {!ageOk && <p className="text-xs text-red-500 mt-1">10-120 岁</p>}
         </div>
 
         <div>
@@ -155,7 +172,12 @@ export default function SettingsPage() {
 
       <button
         onClick={handleSave}
-        className="mt-4 w-full rounded-2xl bg-[#D95959] p-4 font-bold text-white shadow-md shadow-[#D95959]/20 transition-all active:shadow-sm active:brightness-90"
+        disabled={!metricsValid}
+        className={`mt-4 w-full rounded-2xl p-4 font-bold text-white shadow-md transition-all ${
+          metricsValid
+            ? 'bg-[#D95959] shadow-[#D95959]/20 active:shadow-sm active:brightness-90'
+            : 'bg-[#C4B5A5] cursor-not-allowed'
+        }`}
       >
         {saved ? '已保存' : '保存设置'}
       </button>

@@ -6,7 +6,7 @@ import { AlertTriangle, Salad } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
 import { MEAL_LABELS, MEAL_ORDER, type MealType, type VisionFoodItem, type FoodItem } from '@/lib/types';
 import { visionToFoodItems, recalculateByName } from '@/lib/nutrition';
-import { generateId } from '@/lib/utils';
+import { generateId, getLocalDateString } from '@/lib/utils';
 import PhotoCapture from '@/components/PhotoCapture';
 import FoodCard from '@/components/FoodCard';
 
@@ -114,6 +114,7 @@ export default function CameraClient() {
           edited.weight,
           'dish',
           8, // default oil estimate for dish
+          f.cookingMethod, // preserve original cooking method from AI
         );
         const uncertainty = fromDB ? 0.10 : 0.30;
         return {
@@ -138,7 +139,7 @@ export default function CameraClient() {
     if (!resultFoods || resultFoods.length === 0) return;
 
     const totals = calcTotals(resultFoods);
-    const date = new Date().toISOString().split('T')[0];
+    const date = getLocalDateString();
     const meal = {
       id: generateId(),
       date,

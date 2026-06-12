@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Settings } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
-import { calcAvgCalories } from '@/lib/utils';
+import { calcAvgCalories, getLocalDateString } from '@/lib/utils';
 import { calcDynamicTarget } from '@/lib/tdee';
 import { getWorkoutCaloriesByDate } from '@/lib/workout-utils';
 import CalendarGrid from '@/components/CalendarGrid';
@@ -15,7 +15,7 @@ export default function CalendarPage() {
   const router = useRouter();
 
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = getLocalDateString(today);
 
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -63,6 +63,13 @@ export default function CalendarPage() {
   };
 
   const monthName = `${viewYear}年 ${viewMonth + 1}月`;
+  const isCurrentMonth = viewYear === today.getFullYear() && viewMonth === today.getMonth();
+
+  const goToday = () => {
+    setViewYear(today.getFullYear());
+    setViewMonth(today.getMonth());
+    setSelected(todayStr);
+  };
 
   return (
     <div className="px-4 pt-6 pb-4 space-y-4">
@@ -80,7 +87,17 @@ export default function CalendarPage() {
         <button onClick={prevMonth} className="p-1 text-[#C4B5A5]">
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <span className="font-medium text-sm" style={{ fontFamily: 'var(--font-zcool-xiaowei)' }}>{monthName}</span>
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-sm" style={{ fontFamily: 'var(--font-zcool-xiaowei)' }}>{monthName}</span>
+          {!isCurrentMonth && (
+            <button
+              onClick={goToday}
+              className="rounded-lg bg-[#D95959]/10 px-2 py-0.5 text-[11px] font-medium text-[#D95959] hover:bg-[#D95959]/20 transition-colors"
+            >
+              回今天
+            </button>
+          )}
+        </div>
         <button onClick={nextMonth} className="p-1 text-[#C4B5A5]">
           <ChevronRight className="h-5 w-5" />
         </button>

@@ -5,6 +5,7 @@ import { AppState, UserProfile, MealRecord, FoodItem, WorkoutRecord } from './ty
 import { loadState, saveState } from './db';
 
 const EMPTY_STATE: AppState = { profile: null, meals: [], workouts: [] };
+const LOCAL_CACHE_KEY = 'calorie-tracker-cache';
 
 type Action =
   | { type: 'SET_PROFILE'; profile: UserProfile }
@@ -63,28 +64,71 @@ function reducer(state: AppState, action: Action): AppState {
 interface AppContextValue {
   state: AppState;
   loading: boolean;
+  loadError: string | null;
   dispatch: React.Dispatch<Action>;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
 
+/** Synchronous write to localStorage. Safe for beforeunload. */
+function cacheToLocal(state: AppState) {
+  try {
+    localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(state));
+  } catch {
+    // storage full or disabled — ignore
+  }
+}
+
+/** Synchronous read from localStorage. Returns null if missing or corrupt. */
+function readLocalCache(): AppState | null {
+  try {
+    const raw = localStorage.getItem(LOCAL_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object') {
+      return {
+        profile: parsed.profile ?? null,
+        meals: Array.isArray(parsed.meals) ? parsed.meals : [],
+        workouts: Array.isArray(parsed.workouts) ? parsed.workouts : [],
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, EMPTY_STATE);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const isFirstRender = useRef(true);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stateRef = useRef(state);
   stateRef.current = state; // keep ref in sync for beforeunload flush
 
-  // Initial load from Supabase
+  // Initial load from Supabase (with localStorage fallback)
   useEffect(() => {
-    loadState().then((s) => {
-      dispatch({ type: 'LOAD_STATE', state: s });
-      setLoading(false);
+    loadState().then((result) => {
+      if (result.ok) {
+        dispatch({ type: 'LOAD_STATE', state: result.state });
+        setLoading(false);
+      } else {
+        // Try localStorage cache as fallback
+        const cached = readLocalCache();
+        if (cached && (cached.profile || cached.meals.length > 0)) {
+          dispatch({ type: 'LOAD_STATE', state: cached });
+          setLoadError(result.error);
+        } else {
+          // No cache either — start fresh but show error
+          setLoadError(result.error);
+        }
+        setLoading(false);
+      }
     });
   }, []);
 
-  // Debounced save to Supabase on state change
+  // Debounced save to Supabase + synchronous localStorage cache
   useEffect(() => {
     // Skip save on initial render (state was just loaded)
     if (isFirstRender.current) {
@@ -94,18 +138,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       saveState(state);
+      cacheToLocal(state);
     }, 500);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [state]);
 
-  // Flush pending save on page close / navigation (prevent data loss)
+  // Flush pending save on page close / navigation (localStorage is synchronous, Supabase is best-effort)
   useEffect(() => {
     const flush = () => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
-        saveState(stateRef.current); // use ref to avoid stale closure
+        cacheToLocal(stateRef.current);
+        // best-effort async save — browser may kill it, but localStorage is already written
+        saveState(stateRef.current);
       }
     };
     window.addEventListener('beforeunload', flush);
@@ -116,7 +163,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  return React.createElement(AppContext.Provider, { value: { state, loading, dispatch } }, children);
+  return React.createElement(AppContext.Provider, { value: { state, loading, loadError, dispatch } }, children);
 }
 
 export function useApp(): AppContextValue {

@@ -25,6 +25,11 @@ export default function OnboardingWizard() {
 
   const { tdee, dailyTarget } = calculateTDEE(height, weight, age, gender, activityLevel, goalType);
 
+  const heightOk = height >= 100 && height <= 250;
+  const weightOk = weight >= 30 && weight <= 300;
+  const ageOk = age >= 10 && age <= 120;
+  const metricsValid = heightOk && weightOk && ageOk;
+
   const handleComplete = () => {
     const profile = buildProfile(height, weight, age, gender, activityLevel, goalType);
     dispatch({ type: 'SET_PROFILE', profile });
@@ -141,27 +146,39 @@ export default function OnboardingWizard() {
               <input
                 type="number"
                 value={height}
+                min={100} max={250}
                 onChange={(e) => setHeight(Number(e.target.value))}
-                className="w-full rounded-xl border border-[#E8DDD0] bg-white p-3.5 text-base focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
+                className={`w-full rounded-xl border bg-white p-3.5 text-base focus:outline-none focus:ring-2 focus:ring-[#D95959]/10 transition-colors ${
+                  heightOk ? 'border-[#E8DDD0] focus:border-[#D95959]' : 'border-red-300 focus:border-red-400'
+                }`}
               />
+              {!heightOk && <p className="text-xs text-red-500 mt-1">身高需在 100-250 cm</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-[#8A7B6B] mb-1">体重 (kg)</label>
               <input
                 type="number"
                 value={weight}
+                min={30} max={300}
                 onChange={(e) => setWeight(Number(e.target.value))}
-                className="w-full rounded-xl border border-[#E8DDD0] bg-white p-3.5 text-base focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
+                className={`w-full rounded-xl border bg-white p-3.5 text-base focus:outline-none focus:ring-2 focus:ring-[#D95959]/10 transition-colors ${
+                  weightOk ? 'border-[#E8DDD0] focus:border-[#D95959]' : 'border-red-300 focus:border-red-400'
+                }`}
               />
+              {!weightOk && <p className="text-xs text-red-500 mt-1">体重需在 30-300 kg</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-[#8A7B6B] mb-1">年龄</label>
               <input
                 type="number"
                 value={age}
+                min={10} max={120}
                 onChange={(e) => setAge(Number(e.target.value))}
-                className="w-full rounded-xl border border-[#E8DDD0] bg-white p-3.5 text-base focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
+                className={`w-full rounded-xl border bg-white p-3.5 text-base focus:outline-none focus:ring-2 focus:ring-[#D95959]/10 transition-colors ${
+                  ageOk ? 'border-[#E8DDD0] focus:border-[#D95959]' : 'border-red-300 focus:border-red-400'
+                }`}
               />
+              {!ageOk && <p className="text-xs text-red-500 mt-1">年龄需在 10-120 岁</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-[#8A7B6B] mb-1">性别</label>
@@ -211,7 +228,12 @@ export default function OnboardingWizard() {
             </button>
             <button
               onClick={() => setStep(2)}
-              className="flex-1 rounded-2xl bg-[#D95959] py-3.5 font-bold text-white shadow-md shadow-[#D95959]/20 transition-all active:shadow-sm active:brightness-90"
+              disabled={!metricsValid}
+              className={`flex-1 rounded-2xl py-3.5 font-bold text-white shadow-md transition-all ${
+                metricsValid
+                  ? 'bg-[#D95959] shadow-[#D95959]/20 active:shadow-sm active:brightness-90'
+                  : 'bg-[#C4B5A5] cursor-not-allowed'
+              }`}
             >
               下一步
             </button>

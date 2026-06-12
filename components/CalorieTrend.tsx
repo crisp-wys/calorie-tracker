@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useApp } from '@/lib/AppContext';
-import { calcAvgCalories } from '@/lib/utils';
+import { calcAvgCalories, getLocalDateString } from '@/lib/utils';
 import { calcDynamicTarget } from '@/lib/tdee';
 import { getWorkoutCaloriesByDate } from '@/lib/workout-utils';
 
@@ -20,7 +20,7 @@ export default function CalorieTrend() {
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const date = d.toISOString().split('T')[0];
+      const date = getLocalDateString(d);
       days.push({
         date,
         label: DAY_LABELS[d.getDay()],
@@ -114,7 +114,7 @@ export default function CalorieTrend() {
         {days.map((day, i) => {
           const x = startX + i * (barW + gap);
           const barH = Math.max(day.calories > 0 ? 3 : 0, day.calories * scale);
-          const isFuture = day.date > new Date().toISOString().split('T')[0];
+          const isFuture = day.date > getLocalDateString();
 
           return (
             <g key={day.date}>

@@ -58,6 +58,13 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-CN" className={`${zcool.variable} ${zcoolXiaoWei.variable} ${montserrat.variable} ${notoSans.variable} ${playfair.variable}`}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}`,
+          }}
+        />
+      </head>
       <body style={{ fontFamily: notoSans.style.fontFamily, fontWeight: 300 }}>
         <AppProvider>
           <ErrorBoundary>

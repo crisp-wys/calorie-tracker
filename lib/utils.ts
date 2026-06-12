@@ -8,6 +8,12 @@ export function generateId(): string {
   return crypto.randomUUID();
 }
 
+/** Get today's date string in local timezone (YYYY-MM-DD). Use instead of toISOString().split('T')[0] which uses UTC. */
+export function getLocalDateString(date?: Date): string {
+  const d = date ?? new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 /** Average of a calorie range — used in dashboard, calendar, chat, memory. */
 export function calcAvgCalories(min: number, max: number): number {
   return (min + max) / 2;

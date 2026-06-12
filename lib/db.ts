@@ -10,7 +10,11 @@ const EMPTY_STATE: AppState = {
   workouts: [],
 };
 
-export async function loadState(): Promise<AppState> {
+export type LoadResult =
+  | { ok: true; state: AppState }
+  | { ok: false; error: string };
+
+export async function loadState(): Promise<LoadResult> {
   try {
     const deviceId = getDeviceId();
     const { data, error } = await supabase
@@ -19,15 +23,25 @@ export async function loadState(): Promise<AppState> {
       .eq('device_id', deviceId)
       .maybeSingle();
 
-    if (error || !data) return EMPTY_STATE;
+    if (error) {
+      return { ok: false, error: `数据库查询失败: ${error.message}` };
+    }
+
+    if (!data) {
+      return { ok: true, state: EMPTY_STATE };
+    }
 
     return {
-      profile: (data.profile as AppState['profile']) ?? null,
-      meals: (data.meals as AppState['meals']) ?? [],
-      workouts: (data.workouts as AppState['workouts']) ?? [],
+      ok: true,
+      state: {
+        profile: (data.profile as AppState['profile']) ?? null,
+        meals: (data.meals as AppState['meals']) ?? [],
+        workouts: (data.workouts as AppState['workouts']) ?? [],
+      },
     };
-  } catch {
-    return EMPTY_STATE;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : '网络异常';
+    return { ok: false, error: `加载失败: ${message}` };
   }
 }
 

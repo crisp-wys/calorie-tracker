@@ -461,7 +461,9 @@ function calcPackaged(vf: VisionFoodItem): { nutrition: NutritionData; fromDB: b
  * Returns the ratio map keyed by ingredient name, or null.
  */
 function findDishRatio(dishName: string): Record<string, number> | null {
-  for (const key of Object.keys(DISH_RATIOS)) {
+  // Sort by key length descending so "红烧牛肉" matches before "红烧肉"
+  const keys = Object.keys(DISH_RATIOS).sort((a, b) => b.length - a.length);
+  for (const key of keys) {
     if (dishName.includes(key)) return DISH_RATIOS[key];
   }
   return null;
@@ -612,6 +614,7 @@ export function visionToFoodItems(visionFoods: VisionFoodItem[]): FoodItem[] {
       protein: nutrition.protein || 0,
       carbs: nutrition.carbs || 0,
       fat: nutrition.fat || 0,
+      cookingMethod: safeVf.cookingMethod,
     };
   });
 }
@@ -628,6 +631,7 @@ export function recalculateByName(
   weight: number,
   category?: FoodCategory,
   estimatedOil?: number,
+  cookingMethod?: CookingMethod | null,
 ): { nutrition: NutritionData; fromDB: boolean } {
   const safeWeight = weight > 0 ? weight : 100;
   const safeOil = estimatedOil ?? 0;
@@ -637,7 +641,7 @@ export function recalculateByName(
     name,
     weight: safeWeight,
     category: category || 'dish',
-    cookingMethod: 'stir-fry',
+    cookingMethod: cookingMethod || 'stir-fry',
     estimatedOil: safeOil,
     size: null,
     components: null,

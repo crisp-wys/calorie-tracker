@@ -47,17 +47,15 @@ export function calculateTDEE(
 
 /**
  * Compute the effective daily calorie target including today's exercise.
- * Exercise calories are discounted by 0.8 to avoid overestimation common
- * in MET-based calculations.
+ * Exercise calories already discounted in calcStrengthCalories/calcCardioCalories.
  */
 export function calcDynamicTarget(
   baseTarget: number,
   exerciseCalories: number,
 ): { effectiveTarget: number; exerciseCals: number } {
-  const exerciseCals = Math.round(exerciseCalories * 0.8);
   return {
-    effectiveTarget: baseTarget + exerciseCals,
-    exerciseCals,
+    effectiveTarget: baseTarget + exerciseCalories,
+    exerciseCals: exerciseCalories,
   };
 }
 
