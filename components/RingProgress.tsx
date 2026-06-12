@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 interface RingProgressProps {
   current: number;
   target: number;
@@ -5,11 +7,11 @@ interface RingProgressProps {
   strokeWidth?: number;
 }
 
-export default function RingProgress({
+const RingProgress = memo(function RingProgress({
   current,
   target,
   size = 160,
-  strokeWidth = 12,
+  strokeWidth = 14,
 }: RingProgressProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
@@ -19,15 +21,15 @@ export default function RingProgress({
 
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
-      {/* 背景光晕 */}
-      <div className="absolute inset-4 rounded-full bg-brand/5 blur-2xl" />
+      {/* 暖红光晕 */}
+      <div className="absolute inset-4 rounded-full bg-[#D95959]/5 blur-2xl" />
       <svg width={size} height={size} className="-rotate-90 relative z-10">
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#f3f4f6"
+          stroke="#EFE8DE"
           strokeWidth={strokeWidth}
         />
         <circle
@@ -35,24 +37,33 @@ export default function RingProgress({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={isOver ? '#ef4444' : '#E63946'}
+          stroke={isOver ? '#C44F4F' : '#D95959'}
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
           style={{
             transition: 'stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-            filter: 'drop-shadow(0 2px 8px rgba(230, 57, 70, 0.25))',
           }}
         />
       </svg>
       <div className="absolute text-center z-10">
-        <div className="text-3xl font-extrabold tabular-nums tracking-tight">{current}</div>
-        <div className="text-xs text-gray-400 mt-0.5">/ {target} kcal</div>
-        <div className="mt-1 text-sm font-semibold text-brand tabular-nums">
+        <div
+          className="text-4xl tabular-nums tracking-tight"
+          style={{ fontFamily: 'var(--font-playfair)', fontWeight: 400 }}
+        >
+          {current}
+        </div>
+        <div className="text-xs text-[#C4B5A5] mt-0.5">/ {target} kcal</div>
+        <div
+          className="mt-1 text-sm text-[#D95959] tabular-nums"
+          style={{ fontFamily: 'var(--font-zcool-xiaowei)' }}
+        >
           剩余 {Math.max(target - current, 0)}
         </div>
       </div>
     </div>
   );
-}
+});
+
+export default RingProgress;

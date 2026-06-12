@@ -83,7 +83,7 @@ export default function DashboardPage() {
         <RingProgress current={roundedCalories} target={dailyTarget} />
       </div>
 
-      <div className="rounded-2xl bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+      <div className="rounded-2xl bg-[#FFFBF6] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
         <MacroBars
           protein={macros.protein}
           proteinTarget={proteinTarget}

@@ -10,25 +10,25 @@ interface Props {
 
 const COLOR_STYLES: Record<Alert['color'], { bg: string; border: string; text: string; subtext: string; button: string }> = {
   yellow: {
-    bg: 'bg-gradient-to-br from-amber-50 to-amber-100',
-    border: 'border-amber-300',
-    text: 'text-amber-900',
+    bg: 'bg-gradient-to-br from-amber-50/90 to-orange-50/80',
+    border: 'border-amber-200',
+    text: 'text-amber-800',
     subtext: 'text-amber-700',
-    button: 'border-amber-400 text-amber-700',
+    button: 'border-amber-300 text-amber-700',
   },
   blue: {
-    bg: 'bg-gradient-to-br from-blue-50 to-blue-100',
-    border: 'border-blue-300',
-    text: 'text-blue-900',
+    bg: 'bg-gradient-to-br from-blue-50/80 to-sky-50/80',
+    border: 'border-blue-200',
+    text: 'text-blue-800',
     subtext: 'text-blue-600',
-    button: 'border-blue-400 text-blue-700',
+    button: 'border-blue-300 text-blue-700',
   },
   purple: {
-    bg: 'bg-gradient-to-br from-violet-50 to-violet-100',
-    border: 'border-violet-300',
-    text: 'text-violet-900',
+    bg: 'bg-gradient-to-br from-violet-50/80 to-purple-50/80',
+    border: 'border-violet-200',
+    text: 'text-violet-800',
     subtext: 'text-violet-600',
-    button: 'border-violet-400 text-violet-700',
+    button: 'border-violet-300 text-violet-700',
   },
 };
 
@@ -53,7 +53,7 @@ export default function AlertBanner({ alert, onChat, onDismiss }: Props) {
           <p className={`text-xs mt-1 ${s.subtext}`}>{alert.message}</p>
           <button
             onClick={() => onChat(alert.suggestion)}
-            className={`mt-2.5 inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-white border text-xs font-semibold ${s.button} active:brightness-95 transition-all`}
+            className={`mt-2.5 inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-[#FFFBF6] border text-xs font-semibold ${s.button} active:brightness-95 transition-all`}
           >
             💬 和教练聊聊
           </button>

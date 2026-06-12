@@ -1,16 +1,19 @@
 'use client';
 
+import type { Alert } from '@/lib/types';
+import { memo } from 'react';
+
 interface CalendarGridProps {
   year: number;
-  month: number; // 0-indexed
-  dateMeals: Map<string, number>; // date string → total calories
+  month: number;
+  dateMeals: Map<string, number>;
   selectedDate: string;
   onSelect: (date: string) => void;
 }
 
 const DAY_NAMES = ['日', '一', '二', '三', '四', '五', '六'];
 
-export default function CalendarGrid({ year, month, dateMeals, selectedDate, onSelect }: CalendarGridProps) {
+const CalendarGrid = memo(function CalendarGrid({ year, month, dateMeals, selectedDate, onSelect }: CalendarGridProps) {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDayOfWeek = new Date(year, month, 1).getDay();
 
@@ -27,7 +30,7 @@ export default function CalendarGrid({ year, month, dateMeals, selectedDate, onS
 
   return (
     <div>
-      <div className="grid grid-cols-7 text-center text-xs text-gray-400 mb-1">
+      <div className="grid grid-cols-7 text-center text-xs text-[#C4B5A5] mb-1">
         {DAY_NAMES.map((d) => (
           <div key={d} className="py-1">{d}</div>
         ))}
@@ -48,16 +51,17 @@ export default function CalendarGrid({ year, month, dateMeals, selectedDate, onS
                   onClick={() => onSelect(dateStr)}
                   className={`relative py-1.5 text-sm rounded-lg transition-colors ${
                     isSelected
-                      ? 'bg-brand text-white shadow-sm'
+                      ? 'bg-[#D95959] text-white'
                       : isToday
-                      ? 'bg-brand/10 text-brand font-semibold'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-[#D95959]/10 text-[#D95959]'
+                      : 'text-[#5D5040] hover:bg-[#EFE8DE]'
                   }`}
+                  style={{ fontFamily: 'var(--font-playfair)' }}
                 >
                   {day}
                   {hasMeals && (
                     <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full ${
-                      isSelected ? 'bg-white' : 'bg-brand/70'
+                      isSelected ? 'bg-white' : 'bg-[#D95959]/60'
                     }`} />
                   )}
                 </button>
@@ -68,4 +72,6 @@ export default function CalendarGrid({ year, month, dateMeals, selectedDate, onS
       </div>
     </div>
   );
-}
+});
+
+export default CalendarGrid;

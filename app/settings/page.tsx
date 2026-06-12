@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useApp } from '@/lib/AppContext';
-import { buildProfile, calculateTDEE } from '@/lib/tdee';
+import { buildProfile, calculateTDEE, type GoalType, GOAL_LABELS } from '@/lib/tdee';
 import { ACTIVITY_LABELS, type Gender, type ActivityLevel } from '@/lib/types';
 
 export default function SettingsPage() {
@@ -15,6 +15,9 @@ export default function SettingsPage() {
   const [activityLevel, setActivityLevel] = useState<ActivityLevel>(
     state.profile?.activityLevel ?? 1
   );
+  const [goalType, setGoalType] = useState<GoalType>(
+    state.profile?.goalType ?? 'lose'
+  );
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -24,13 +27,14 @@ export default function SettingsPage() {
       setAge(state.profile.age);
       setGender(state.profile.gender);
       setActivityLevel(state.profile.activityLevel);
+      setGoalType(state.profile.goalType ?? 'lose');
     }
   }, [state.profile]);
 
-  const { tdee, dailyTarget } = calculateTDEE(height, weight, age, gender, activityLevel);
+  const { tdee, dailyTarget } = calculateTDEE(height, weight, age, gender, activityLevel, goalType);
 
   const handleSave = () => {
-    const profile = buildProfile(height, weight, age, gender, activityLevel);
+    const profile = buildProfile(height, weight, age, gender, activityLevel, goalType);
     dispatch({ type: 'SET_PROFILE', profile });
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
@@ -42,37 +46,37 @@ export default function SettingsPage() {
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">身高 (cm)</label>
+          <label className="block text-sm font-medium text-[#8A7B6B] mb-1.5">身高 (cm)</label>
           <input
             type="number"
             value={height}
             onChange={(e) => setHeight(Number(e.target.value))}
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3.5 text-base transition-colors focus:bg-white focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10"
+            className="w-full rounded-xl border border-[#E8DDD0] bg-[#FAF6F0] p-3.5 text-base transition-colors focus:bg-white focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">体重 (kg)</label>
+          <label className="block text-sm font-medium text-[#8A7B6B] mb-1.5">体重 (kg)</label>
           <input
             type="number"
             value={weight}
             onChange={(e) => setWeight(Number(e.target.value))}
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3.5 text-base transition-colors focus:bg-white focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10"
+            className="w-full rounded-xl border border-[#E8DDD0] bg-[#FAF6F0] p-3.5 text-base transition-colors focus:bg-white focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">年龄</label>
+          <label className="block text-sm font-medium text-[#8A7B6B] mb-1.5">年龄</label>
           <input
             type="number"
             value={age}
             onChange={(e) => setAge(Number(e.target.value))}
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3.5 text-base transition-colors focus:bg-white focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10"
+            className="w-full rounded-xl border border-[#E8DDD0] bg-[#FAF6F0] p-3.5 text-base transition-colors focus:bg-white focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">性别</label>
+          <label className="block text-sm font-medium text-[#8A7B6B] mb-1.5">性别</label>
           <div className="flex gap-2">
             {(['male', 'female'] as Gender[]).map((g) => (
               <button
@@ -80,8 +84,8 @@ export default function SettingsPage() {
                 onClick={() => setGender(g)}
                 className={`flex-1 rounded-xl border p-3.5 text-sm font-medium transition-all ${
                   gender === g
-                    ? 'border-brand bg-brand/10 text-brand shadow-sm shadow-brand/10'
-                    : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                    ? 'border-[#D95959] bg-[#D95959]/10 text-[#D95959] shadow-sm shadow-[#D95959]/10'
+                    : 'border-[#E8DDD0] text-[#8A7B6B] hover:border-gray-300'
                 }`}
               >
                 {g === 'male' ? '男' : '女'}
@@ -91,11 +95,11 @@ export default function SettingsPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">活动等级</label>
+          <label className="block text-sm font-medium text-[#8A7B6B] mb-1.5">活动等级</label>
           <select
             value={activityLevel}
             onChange={(e) => setActivityLevel(Number(e.target.value) as ActivityLevel)}
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3.5 text-base transition-colors focus:bg-white focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10"
+            className="w-full rounded-xl border border-[#E8DDD0] bg-[#FAF6F0] p-3.5 text-base transition-colors focus:bg-white focus:border-[#D95959] focus:outline-none focus:ring-2 focus:ring-[#D95959]/10"
           >
             {(Object.entries(ACTIVITY_LABELS) as [string, string][]).map(([val, label]) => (
               <option key={val} value={val}>
@@ -104,20 +108,39 @@ export default function SettingsPage() {
             ))}
           </select>
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[#8A7B6B] mb-1.5">目标</label>
+          <div className="flex gap-2">
+            {(Object.entries(GOAL_LABELS) as [string, string][]).map(([val, label]) => (
+              <button
+                key={val}
+                onClick={() => setGoalType(val as GoalType)}
+                className={`flex-1 rounded-xl border p-3.5 text-sm font-medium transition-all ${
+                  goalType === val
+                    ? 'border-[#D95959] bg-[#D95959]/10 text-[#D95959] shadow-sm shadow-[#D95959]/10'
+                    : 'border-[#E8DDD0] text-[#8A7B6B] hover:border-gray-300'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="mt-6 rounded-2xl bg-brand/10 p-5 text-center">
-        <div className="text-sm text-brand">
+      <div className="mt-6 rounded-2xl bg-[#D95959]/10 p-5 text-center">
+        <div className="text-sm text-[#D95959]">
           TDEE: <span className="font-bold text-lg">{tdee}</span> kcal
         </div>
-        <div className="text-sm text-brand mt-1">
-          每日减脂目标: <span className="font-bold text-lg">{dailyTarget}</span> kcal
+        <div className="text-sm text-[#D95959] mt-1">
+          每日{GOAL_LABELS[goalType]}目标: <span className="font-bold text-lg">{dailyTarget}</span> kcal
         </div>
       </div>
 
       <button
         onClick={handleSave}
-        className="mt-4 w-full rounded-2xl bg-brand p-4 font-bold text-white shadow-md shadow-brand/20 transition-all active:shadow-sm active:brightness-90"
+        className="mt-4 w-full rounded-2xl bg-[#D95959] p-4 font-bold text-white shadow-md shadow-[#D95959]/20 transition-all active:shadow-sm active:brightness-90"
       >
         {saved ? '已保存' : '保存设置'}
       </button>

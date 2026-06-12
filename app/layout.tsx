@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from 'next';
-import { ZCOOL_KuaiLe, Noto_Sans_SC, Montserrat } from 'next/font/google';
+import { ZCOOL_KuaiLe, ZCOOL_XiaoWei, Noto_Sans_SC, Montserrat, Playfair_Display } from 'next/font/google';
 import { AppProvider } from '@/lib/AppContext';
 import BottomTabWrapper from '@/components/BottomTabWrapper';
+import CoachFABWrapper from '@/components/CoachFABWrapper';
 import './globals.css';
 
 const zcool = ZCOOL_KuaiLe({
@@ -9,6 +10,13 @@ const zcool = ZCOOL_KuaiLe({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-zcool-kuai-le',
+});
+
+const zcoolXiaoWei = ZCOOL_XiaoWei({
+  weight: '400',
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-zcool-xiaowei',
 });
 
 const montserrat = Montserrat({
@@ -19,10 +27,17 @@ const montserrat = Montserrat({
 });
 
 const notoSans = Noto_Sans_SC({
-  weight: ['400', '900'],
+  weight: ['300', '700'],
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-noto-sans-sc',
+});
+
+const playfair = Playfair_Display({
+  weight: '400',
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-playfair',
 });
 
 export const metadata: Metadata = {
@@ -36,18 +51,19 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#E63946',
+  themeColor: '#D95959',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN" className={`${zcool.variable} ${montserrat.variable} ${notoSans.variable}`}>
-      <body style={{ fontFamily: notoSans.style.fontFamily }}>
+    <html lang="zh-CN" className={`${zcool.variable} ${zcoolXiaoWei.variable} ${montserrat.variable} ${notoSans.variable} ${playfair.variable}`}>
+      <body style={{ fontFamily: notoSans.style.fontFamily, fontWeight: 300 }}>
         <AppProvider>
           <main className="mx-auto max-w-lg pb-16 min-h-full">
             {children}
           </main>
           <BottomTabWrapper />
+          <CoachFABWrapper />
         </AppProvider>
       </body>
     </html>

@@ -3,8 +3,7 @@ import type {
   AppState,
 } from './types';
 import { DEFAULT_AI_CONFIG } from './types';
-
-const MEMORY_KEY = 'calorie-tracker-memory';
+import { calcAvgCalories } from './utils';
 
 const ENCOURAGING_PROMPT = `你是一个温暖、友好、充满正能量的健身与营养教练。
 核心风格：
@@ -37,19 +36,7 @@ const STRICT_PROMPT = `你是一个严格、直接、不废话的健身与营养
 - 对比历史数据施压（"上周减了 0.3kg，这周不动，你在偷懒吗？"）
 - 给出明确的量化目标，不模棱两可`;
 
-export function loadMemory(): UserMemory {
-  try {
-    const raw = localStorage.getItem(MEMORY_KEY);
-    if (!raw) return getDefaultMemory();
-    return JSON.parse(raw) as UserMemory;
-  } catch {
-    return getDefaultMemory();
-  }
-}
-
-export function saveMemory(memory: UserMemory): void {
-  localStorage.setItem(MEMORY_KEY, JSON.stringify(memory));
-}
+// Note: loadMemory / saveMemory are now async — import from './db' directly
 
 export function getDefaultMemory(): UserMemory {
   return {
@@ -65,6 +52,16 @@ export function needsMemoryUpdate(memory: UserMemory): boolean {
   if (memory.lastSummaryDate === null) return true;
   const today = new Date().toISOString().split('T')[0];
   return memory.lastSummaryDate !== today;
+}
+
+const MAX_PROMPT_TOKENS = 8000;
+const MAX_TODAY_FOODS = 20;
+const MAX_INSIGHTS = 10;
+const MAX_MILESTONES = 5;
+
+/** Rough token estimation: ~1 token per 1.5 Chinese/English chars. */
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 1.5);
 }
 
 export function buildSystemPrompt(
@@ -97,12 +94,15 @@ export function buildSystemPrompt(
 
   if (todayMeals.length > 0) {
     prompt += '\n\n【今日饮食记录】';
+    let foodCount = 0;
     for (const m of todayMeals) {
-      const foods = m.foods.map((f) => `${f.name}(${f.weight}g)`).join('、');
+      const foods = m.foods.slice(0, MAX_TODAY_FOODS - foodCount).map((f) => `${f.name}(${f.weight}g)`).join('、');
       prompt += `\n${mealLabels[m.mealType] || m.mealType}：${foods} 共 ${m.totalCaloriesMin}-${m.totalCaloriesMax}kcal`;
+      foodCount += m.foods.length;
+      if (foodCount >= MAX_TODAY_FOODS) break;
     }
     const totalToday = todayMeals.reduce(
-      (s, m) => s + (m.totalCaloriesMin + m.totalCaloriesMax) / 2, 0
+      (s, m) => s + calcAvgCalories(m.totalCaloriesMin, m.totalCaloriesMax), 0
     );
     prompt += `\n今日已摄入：${Math.round(totalToday)}/${profile?.dailyTarget ?? 2000}kcal`;
   } else {
@@ -113,15 +113,17 @@ export function buildSystemPrompt(
   if (weekText) prompt += weekText;
 
   if (memory.insights.length > 0) {
+    const limited = memory.insights.slice(-MAX_INSIGHTS);
     prompt += '\n\n【AI 记忆档案】\n洞察：' +
-      memory.insights.map((i) => i.text).join('；');
+      limited.map((i) => i.text).join('；');
   }
   if (memory.preferences.length > 0) {
-    prompt += '\n用户偏好：' + memory.preferences.join('；');
+    prompt += '\n用户偏好：' + memory.preferences.slice(-10).join('；');
   }
   if (memory.milestones.length > 0) {
+    const limited = memory.milestones.slice(-MAX_MILESTONES);
     prompt += '\n里程碑：' +
-      memory.milestones.map((m) => `${m.date} ${m.event}`).join('；');
+      limited.map((m) => `${m.date} ${m.event}`).join('；');
   }
 
   return prompt;
@@ -141,7 +143,7 @@ function buildWeekSummary(meals: AppState['meals']): string {
 
     let calories = 0, protein = 0, carbs = 0, fat = 0;
     dayMeals.forEach((m) => {
-      calories += (m.totalCaloriesMin + m.totalCaloriesMax) / 2;
+      calories += calcAvgCalories(m.totalCaloriesMin, m.totalCaloriesMax);
       m.foods.forEach((f) => {
         protein += f.protein;
         carbs += f.carbs;

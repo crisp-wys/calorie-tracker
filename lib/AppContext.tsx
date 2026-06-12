@@ -1,18 +1,24 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef, useState, ReactNode } from 'react';
 import { AppState, UserProfile, MealRecord, FoodItem } from './types';
-import { loadState, saveState } from './storage';
+import { loadState, saveState } from './db';
+
+const EMPTY_STATE: AppState = { profile: null, meals: [] };
 
 type Action =
   | { type: 'SET_PROFILE'; profile: UserProfile }
   | { type: 'ADD_MEAL'; meal: MealRecord }
   | { type: 'UPDATE_MEAL'; meal: MealRecord }
   | { type: 'DELETE_MEAL'; id: string }
-  | { type: 'UPDATE_FOOD'; mealId: string; food: FoodItem };
+  | { type: 'UPDATE_FOOD'; mealId: string; food: FoodItem }
+  | { type: 'LOAD_STATE'; state: AppState };
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
+    case 'LOAD_STATE':
+      return action.state;
+
     case 'SET_PROFILE':
       return { ...state, profile: action.profile };
 
@@ -48,19 +54,43 @@ function reducer(state: AppState, action: Action): AppState {
 
 interface AppContextValue {
   state: AppState;
+  loading: boolean;
   dispatch: React.Dispatch<Action>;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, null, loadState);
+  const [state, dispatch] = useReducer(reducer, EMPTY_STATE);
+  const [loading, setLoading] = useState(true);
+  const isFirstRender = useRef(true);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Initial load from Supabase
   useEffect(() => {
-    saveState(state);
+    loadState().then((s) => {
+      dispatch({ type: 'LOAD_STATE', state: s });
+      setLoading(false);
+    });
+  }, []);
+
+  // Debounced save to Supabase on state change
+  useEffect(() => {
+    // Skip save on initial render (state was just loaded)
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      saveState(state);
+    }, 500);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [state]);
 
-  return React.createElement(AppContext.Provider, { value: { state, dispatch } }, children);
+  return React.createElement(AppContext.Provider, { value: { state, loading, dispatch } }, children);
 }
 
 export function useApp(): AppContextValue {

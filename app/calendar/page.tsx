@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
+import { calcAvgCalories } from '@/lib/utils';
 import CalendarGrid from '@/components/CalendarGrid';
 
 export default function CalendarPage() {
@@ -19,7 +20,7 @@ export default function CalendarPage() {
   const dateMeals = useMemo(() => {
     const map = new Map<string, number>();
     state.meals.forEach((m) => {
-      const avg = (m.totalCaloriesMin + m.totalCaloriesMax) / 2;
+      const avg = calcAvgCalories(m.totalCaloriesMin, m.totalCaloriesMax);
       map.set(m.date, (map.get(m.date) ?? 0) + avg);
     });
     return map;
@@ -51,14 +52,14 @@ export default function CalendarPage() {
 
   return (
     <div className="px-4 pt-6 pb-4 space-y-4">
-      <h1 className="text-xl font-extrabold">饮食日历</h1>
+      <h1 className="text-xl font-extrabold" style={{ fontFamily: 'var(--font-zcool-xiaowei)' }}>饮食日历</h1>
 
       <div className="flex items-center justify-between">
-        <button onClick={prevMonth} className="p-1 text-gray-500">
+        <button onClick={prevMonth} className="p-1 text-[#C4B5A5]">
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <span className="font-medium text-sm">{monthName}</span>
-        <button onClick={nextMonth} className="p-1 text-gray-500">
+        <span className="font-medium text-sm" style={{ fontFamily: 'var(--font-zcool-xiaowei)' }}>{monthName}</span>
+        <button onClick={nextMonth} className="p-1 text-[#C4B5A5]">
           <ChevronRight className="h-5 w-5" />
         </button>
       </div>
@@ -71,11 +72,11 @@ export default function CalendarPage() {
         onSelect={setSelected}
       />
 
-      <div className="rounded-2xl bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
-        <div className="text-sm text-gray-500">{selected}</div>
+      <div className="rounded-2xl bg-[#FFFBF6] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+        <div className="text-sm text-[#C4B5A5]">{selected}</div>
         <div className="mt-1 flex items-baseline gap-2">
           <span className="text-xl font-bold tabular-nums">{selectedCalories}</span>
-          <span className="text-sm text-gray-400">/ {target} kcal</span>
+          <span className="text-sm text-[#C4B5A5]">/ {target} kcal</span>
         </div>
         <div className={`mt-1 text-sm ${isOver ? 'text-red-500' : 'text-brand'}`}>
           {selectedCalories === 0
