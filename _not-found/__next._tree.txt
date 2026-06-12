@@ -1,4 +1,5 @@
-:HL["/calorie-tracker/_next/static/chunks/0ugr_tv2a9ibs.css","style"]
-:HL["/calorie-tracker/_next/static/chunks/0zo_k6~r~43sb.css","style"]
-:HL["/calorie-tracker/_next/static/chunks/01r3d1fv7s.90.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"My6-wl3Qn276b24CmOwm8"}
+:HL["/_next/static/chunks/07sbuj~pdaqax.css","style"]
+:HL["/_next/static/chunks/17_q0ihaslcm6.css","style"]
+:HL["/_next/static/chunks/0nqdb~exyux2x.css","style"]
+:HL["/_next/static/chunks/09vskxdu.s_ve.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"TTNS1VkQExmkrdnEAkHsX"}
