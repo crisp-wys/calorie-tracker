@@ -90,6 +90,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   }, [state]);
 
+  // Flush pending save on page close / navigation (prevent data loss)
+  useEffect(() => {
+    const flush = () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        saveState(state); // fire-and-forget on unload
+      }
+    };
+    window.addEventListener('beforeunload', flush);
+    window.addEventListener('pagehide', flush);
+    return () => {
+      window.removeEventListener('beforeunload', flush);
+      window.removeEventListener('pagehide', flush);
+    };
+  }, [state]);
+
   return React.createElement(AppContext.Provider, { value: { state, loading, dispatch } }, children);
 }
 

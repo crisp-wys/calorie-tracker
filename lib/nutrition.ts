@@ -138,10 +138,11 @@ const NAME_ALIASES: Record<string, string> = {
   '年糕': '年糕',
   '糍粑': '年糕',
   '油条': '油条',
-  '水果': '苹果',
 };
 
-// ── Core lookup ──────────────────────────────────────────────────
+// Pre-computed for performance
+const DISH_SEP_REGEX = new RegExp(DISH_SEPARATORS.map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g');
+const SORTED_DB_KEYS = Object.keys(foodDb as Record<string, NutritionData>).sort((a, b) => b.length - a.length);
 
 export function findFood(name: string): NutritionData | null {
   const normalized = name.trim();
@@ -173,9 +174,8 @@ export function findFood(name: string): NutritionData | null {
     }
   }
 
-  // 5. Longest substring match (prefer longer keys)
-  const keys = Object.keys(db).sort((a, b) => b.length - a.length);
-  const key = keys.find((k) => normalized.includes(k));
+  // 5. Longest substring match (prefer longer keys — uses pre-sorted keys)
+  const key = SORTED_DB_KEYS.find((k) => normalized.includes(k));
   if (key) return db[key];
 
   return null;
@@ -243,19 +243,11 @@ export function decomposeDish(name: string): string[] {
     }
   }
 
-  // Split on separator characters
-  let parts: string[] = [stripped];
-  for (const sep of DISH_SEPARATORS) {
-    const newParts: string[] = [];
-    for (const part of parts) {
-      const split = part.split(sep);
-      newParts.push(...split);
-    }
-    parts = newParts;
-  }
+  // Split on separator characters in one regex pass (pre-compiled)
+  const rawParts = stripped.split(DISH_SEP_REGEX);
 
   // Strip cooking suffixes from each part
-  parts = parts
+  const parts = rawParts
     .map((p) => {
       let s = p.trim();
       for (const suffix of COOKING_SUFFIXES) {

@@ -34,15 +34,13 @@ export default function DashboardPage() {
   }
 
   const today = new Date().toISOString().split('T')[0];
-  const todayMeals = meals.filter((m) => m.date === today);
 
-  const totalCalories = todayMeals.reduce(
-    (s, m) => s + calcAvgCalories(m.totalCaloriesMin, m.totalCaloriesMax),
-    0
-  );
-  const roundedCalories = Math.round(totalCalories);
-
-  const macros = useMemo(() => {
+  const { todayMeals, totalCalories, roundedCalories, macros } = useMemo(() => {
+    const todayMeals = meals.filter((m) => m.date === today);
+    const totalCalories = todayMeals.reduce(
+      (s, m) => s + calcAvgCalories(m.totalCaloriesMin, m.totalCaloriesMax),
+      0
+    );
     let protein = 0, carbs = 0, fat = 0;
     todayMeals.forEach((m) =>
       m.foods.forEach((f) => {
@@ -51,8 +49,13 @@ export default function DashboardPage() {
         fat += f.fat;
       })
     );
-    return { protein: Math.round(protein), carbs: Math.round(carbs), fat: Math.round(fat) };
-  }, [todayMeals]);
+    return {
+      todayMeals,
+      totalCalories,
+      roundedCalories: Math.round(totalCalories),
+      macros: { protein: Math.round(protein), carbs: Math.round(carbs), fat: Math.round(fat) },
+    };
+  }, [meals, today]);
 
   const alerts = useMemo(() => calcAlerts(meals, profile), [meals, profile]);
 

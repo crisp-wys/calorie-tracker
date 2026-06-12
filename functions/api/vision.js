@@ -1,8 +1,9 @@
 const QWEN_API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
 const QWEN_MODEL = 'qwen-vl-max';
 
-// Known food names in our local database — AI should use these or close variants.
-// Grouped by category so the model understands what's available.
+// ⚠️ SYNC NOTICE: This list must stay in sync with lib/food-db.json.
+// When you add/remove foods in the DB, update this list accordingly.
+// Tip: run `node -e "const db = require('./lib/food-db.json'); console.log(Object.keys(db).sort().join(' '))"` to get the full list.
 const KNOWN_FOODS = `
 【主食】米饭 稀饭 粥 面条 馒头 花卷 包子 饺子 馄饨 烧卖 油条 烧饼 面包 全麦面包 米粉 河粉 粉丝 红薯粉 年糕 粽子 汤圆 燕麦片 小米粥 八宝粥 玉米 红薯 紫薯 土豆 山药 芋头 南瓜 藕
 【蛋类】鸡蛋 鸭蛋 鹌鹑蛋

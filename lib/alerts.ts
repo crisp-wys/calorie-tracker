@@ -1,52 +1,7 @@
-import type { Alert, AlertType, MealRecord, MealType, FoodItem } from './types';
-import { calcAvgCalories } from './utils';
+import type { Alert, MealRecord, MealType } from './types';
+import { getDailySummaries, type DailySummary } from './utils';
 
 // ── Helpers ──────────────────────────────────────────────────────
-
-interface DailySummary {
-  date: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  mealBreakdown: Record<MealType, number>;
-}
-
-function emptyBreakdown(): Record<MealType, number> {
-  return { breakfast: 0, lunch: 0, dinner: 0, snack: 0 };
-}
-
-/** Get per-day calorie/macro summaries for the last N days */
-function getDailySummaries(meals: MealRecord[], days: number): DailySummary[] {
-  const map = new Map<string, DailySummary>();
-
-  for (const m of meals) {
-    let day = map.get(m.date);
-    if (!day) {
-      day = {
-        date: m.date,
-        calories: 0,
-        protein: 0,
-        carbs: 0,
-        fat: 0,
-        mealBreakdown: emptyBreakdown(),
-      };
-      map.set(m.date, day);
-    }
-    const mealCal = calcAvgCalories(m.totalCaloriesMin, m.totalCaloriesMax);
-    day.calories += mealCal;
-    day.mealBreakdown[m.mealType] += mealCal;
-    m.foods.forEach((f: FoodItem) => {
-      day.protein += f.protein;
-      day.carbs += f.carbs;
-      day.fat += f.fat;
-    });
-  }
-
-  return Array.from(map.values())
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, days);
-}
 
 // ── Rule 1: Consecutive calorie over ─────────────────────────────
 

@@ -5,15 +5,13 @@ import Link from 'next/link';
 export default function OnboardingScreen() {
   return (
     <div
-      className="fixed inset-0 z-[100] flex flex-col items-center bg-[#F8F9FA] overflow-y-auto"
+      className="fixed inset-0 z-[100] flex flex-col items-center bg-[#FAF6F0] overflow-y-auto"
       style={{
         backgroundImage: `
-          linear-gradient(rgba(230,57,70,.03) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(230,57,70,.03) 1px, transparent 1px),
-          radial-gradient(circle at 10% 20%, rgba(230,57,70,.08) 0%, transparent 40%),
-          radial-gradient(circle at 90% 80%, rgba(230,57,70,.08) 0%, transparent 40%)
+          radial-gradient(circle at 10% 20%, rgba(217,89,89,0.08) 0%, transparent 40%),
+          radial-gradient(circle at 90% 80%, rgba(217,89,89,0.04) 0%, transparent 40%)
         `,
-        backgroundSize: '30px 30px, 30px 30px, 100% 100%, 100% 100%',
+        backgroundSize: '100% 100%, 100% 100%',
       }}
     >
       {/* 顶部品牌 */}
@@ -64,7 +62,7 @@ export default function OnboardingScreen() {
         <div className="relative w-[280px] animate-float">
           <div className="absolute -inset-16 bg-brand/10 rounded-full blur-[80px] opacity-60" />
           <div className="relative bg-white p-3 rounded-[40px] border-4 border-white overflow-hidden aspect-[4/5] shadow-[0_20px_50px_rgba(0,0,0,0.08)]">
-            <div className="w-full h-full rounded-[32px] bg-gradient-to-br from-[#E63946] via-[#FF6B6B] to-[#FFD93D] flex items-center justify-center">
+            <div className="w-full h-full rounded-[32px] bg-gradient-to-br from-[#D95959] via-[#E88D8D] to-[#E8B86D] flex items-center justify-center">
               <span className="text-8xl">🐹</span>
             </div>
           </div>
@@ -81,10 +79,10 @@ export default function OnboardingScreen() {
         </Link>
 
         <div className="relative">
-          <div className="absolute inset-0 bg-[#E63946] blur-xl opacity-20" />
-          <div className="relative bg-[#1A1A1A] px-8 py-4 rounded-2xl border-b-4 border-r-4 border-[#E63946]">
+          <div className="absolute inset-0 bg-[#D95959] blur-xl opacity-20" />
+          <div className="relative bg-[#1A1A1A] px-8 py-4 rounded-2xl border-b-4 border-r-4 border-[#D95959]">
             <p className="text-lg font-black text-white tracking-widest">
-              渴了就喝水，<span className="text-[#E63946]">饿了就打嘴</span>
+              渴了就喝水，<span className="text-[#D95959]">饿了就打嘴</span>
             </p>
           </div>
         </div>

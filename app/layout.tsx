@@ -3,6 +3,7 @@ import { ZCOOL_KuaiLe, ZCOOL_XiaoWei, Noto_Sans_SC, Montserrat, Playfair_Display
 import { AppProvider } from '@/lib/AppContext';
 import BottomTabWrapper from '@/components/BottomTabWrapper';
 import CoachFABWrapper from '@/components/CoachFABWrapper';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import './globals.css';
 
 const zcool = ZCOOL_KuaiLe({
@@ -59,11 +60,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="zh-CN" className={`${zcool.variable} ${zcoolXiaoWei.variable} ${montserrat.variable} ${notoSans.variable} ${playfair.variable}`}>
       <body style={{ fontFamily: notoSans.style.fontFamily, fontWeight: 300 }}>
         <AppProvider>
-          <main className="mx-auto max-w-lg pb-16 min-h-full">
-            {children}
-          </main>
-          <BottomTabWrapper />
-          <CoachFABWrapper />
+          <ErrorBoundary>
+            <main className="mx-auto max-w-lg pb-16 min-h-full">
+              {children}
+            </main>
+            <BottomTabWrapper />
+            <CoachFABWrapper />
+          </ErrorBoundary>
         </AppProvider>
       </body>
     </html>

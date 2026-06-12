@@ -11,7 +11,7 @@ export const PERSONALITY_OPTIONS: {
 ];
 
 export const AVATAR_OPTIONS = [
-  { id: 'robot', emoji: '🤖', color: '#E63946' },
+  { id: 'robot', emoji: '🤖', color: '#D95959' },
   { id: 'muscle', emoji: '💪', color: '#2563EB' },
   { id: 'leaf', emoji: '🥗', color: '#16A34A' },
   { id: 'sparkle', emoji: '✨', color: '#7C3AED' },

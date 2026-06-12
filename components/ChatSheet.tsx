@@ -59,12 +59,22 @@ export default function ChatSheet({ open, onClose, prefill }: Props) {
     }
   };
 
-  // Cleanup body overflow on unmount
+  // Cleanup body overflow on unmount or when visibility changes externally
   useEffect(() => {
     return () => {
       document.body.style.overflow = '';
     };
   }, []);
+
+  // Also restore body overflow when open becomes false (handles parent-removed case)
+  useEffect(() => {
+    if (!open) {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
 
   if (!visible) return null;
 

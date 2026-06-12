@@ -3,7 +3,7 @@ import type {
   AppState,
 } from './types';
 import { DEFAULT_AI_CONFIG } from './types';
-import { calcAvgCalories } from './utils';
+import { calcAvgCalories, getDailySummaries } from './utils';
 
 const ENCOURAGING_PROMPT = `你是一个温暖、友好、充满正能量的健身与营养教练。
 核心风格：
@@ -130,37 +130,8 @@ export function buildSystemPrompt(
 }
 
 function buildWeekSummary(meals: AppState['meals']): string {
-  const today = new Date();
-  const days: {
-    date: string; calories: number; protein: number; carbs: number; fat: number;
-  }[] = [];
-
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
-    const dayMeals = meals.filter((m) => m.date === dateStr);
-
-    let calories = 0, protein = 0, carbs = 0, fat = 0;
-    dayMeals.forEach((m) => {
-      calories += calcAvgCalories(m.totalCaloriesMin, m.totalCaloriesMax);
-      m.foods.forEach((f) => {
-        protein += f.protein;
-        carbs += f.carbs;
-        fat += f.fat;
-      });
-    });
-
-    days.push({
-      date: dateStr,
-      calories: Math.round(calories),
-      protein: Math.round(protein),
-      carbs: Math.round(carbs),
-      fat: Math.round(fat),
-    });
-  }
-
-  const withData = days.filter((d) => d.calories > 0);
+  const summaries = getDailySummaries(meals, 7);
+  const withData = summaries.filter((d) => d.calories > 0);
   if (withData.length === 0) return '';
 
   const avgCal = Math.round(
