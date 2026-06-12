@@ -126,11 +126,6 @@ export default function FitnessPage() {
             <p className="text-2xl font-bold text-[#3D3226]">{effectiveTarget} kcal</p>
           </div>
         </div>
-        {todayExerciseCals > 0 && (
-          <p className="text-xs text-[#C4B5A5] text-center mt-3">
-            基础 {profile?.dailyTarget ?? 2000} + 运动 {todayExerciseCals}×0.8 → {effectiveTarget}
-          </p>
-        )}
       </div>
 
       {/* Add workout form */}

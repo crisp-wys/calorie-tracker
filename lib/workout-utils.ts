@@ -96,8 +96,8 @@ export function calcStrengthCalories(
 ): { duration: number; calories: number } {
   const ex = findExercise(exerciseName);
   const met = ex?.met ?? 5;
-  // Duration: sets × reps × 3 seconds each (includes brief intra-set pause)
-  const durationMin = (sets * reps * 3) / 60;
+  // Duration: ~2 min per set (work + rest between sets). MET values already account for intermittent nature of weight training.
+  const durationMin = sets * 2;
   // Calories = MET × weight × hours × 0.8 discount
   const rawCals = met * bodyWeightKg * (durationMin / 60);
   const calories = Math.round(rawCals * 0.8);
