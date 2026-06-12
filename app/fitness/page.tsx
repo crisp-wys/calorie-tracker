@@ -7,6 +7,7 @@ import { BODY_PARTS, calcStrengthCalories, calcCardioCalories, sumTodayWorkoutCa
 import { calcDynamicTarget } from '@/lib/tdee';
 import { Trash2 } from 'lucide-react';
 import type { WorkoutRecord } from '@/lib/types';
+import UndoToast from '@/components/UndoToast';
 
 export default function FitnessPage() {
   const { state, dispatch } = useApp();
@@ -21,6 +22,7 @@ export default function FitnessPage() {
   const [weightKg, setWeightKg] = useState(20);
   const [duration, setDuration] = useState(30);
   const [added, setAdded] = useState(false);
+  const [undoWorkout, setUndoWorkout] = useState<WorkoutRecord | null>(null);
 
   const bodyWeight = profile?.weight ?? 70;
 
@@ -97,8 +99,9 @@ export default function FitnessPage() {
     setTimeout(() => setAdded(false), 1200);
   };
 
-  const handleDelete = (id: string) => {
-    dispatch({ type: 'DELETE_WORKOUT', id });
+  const handleDelete = (workout: WorkoutRecord) => {
+    setUndoWorkout(workout);
+    dispatch({ type: 'DELETE_WORKOUT', id: workout.id });
   };
 
   return (
@@ -306,7 +309,7 @@ export default function FitnessPage() {
                     </p>
                   </div>
                   <button
-                    onClick={() => handleDelete(w.id)}
+                    onClick={() => handleDelete(w)}
                     className="flex-shrink-0 h-8 w-8 rounded-lg hover:bg-[#EFE8DE] flex items-center justify-center text-[#C4B5A5] hover:text-[#D95959] transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -317,6 +320,18 @@ export default function FitnessPage() {
           </div>
         )}
       </div>
+
+      {/* Undo toast */}
+      {undoWorkout && (
+        <UndoToast
+          message={`已删除 ${undoWorkout.exercise}`}
+          onUndo={() => {
+            dispatch({ type: 'ADD_WORKOUT', workout: undoWorkout });
+            setUndoWorkout(null);
+          }}
+          onDismiss={() => setUndoWorkout(null)}
+        />
+      )}
     </div>
   );
 }

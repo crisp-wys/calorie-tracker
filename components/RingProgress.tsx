@@ -5,6 +5,7 @@ interface RingProgressProps {
   target: number;
   size?: number;
   strokeWidth?: number;
+  isEmpty?: boolean;
 }
 
 const RingProgress = memo(function RingProgress({
@@ -12,6 +13,7 @@ const RingProgress = memo(function RingProgress({
   target,
   size = 160,
   strokeWidth = 14,
+  isEmpty = false,
 }: RingProgressProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
@@ -48,19 +50,33 @@ const RingProgress = memo(function RingProgress({
         />
       </svg>
       <div className="absolute text-center z-10">
-        <div
-          className="text-4xl tabular-nums tracking-tight"
-          style={{ fontFamily: 'var(--font-playfair)', fontWeight: 400 }}
-        >
-          {current}
-        </div>
-        <div className="text-xs text-[#C4B5A5] mt-0.5">/ {target} kcal</div>
-        <div
-          className="mt-1 text-sm text-[#D95959] tabular-nums"
-          style={{ fontFamily: 'var(--font-zcool-xiaowei)' }}
-        >
-          剩余 {Math.max(target - current, 0)}
-        </div>
+        {isEmpty && current === 0 ? (
+          <>
+            <div
+              className="text-base text-[#C4B5A5]"
+              style={{ fontFamily: 'var(--font-zcool-xiaowei)' }}
+            >
+              记录今日
+            </div>
+            <div className="text-xs text-[#C4B5A5] mt-0.5">第一餐</div>
+          </>
+        ) : (
+          <>
+            <div
+              className="text-4xl tabular-nums tracking-tight"
+              style={{ fontFamily: 'var(--font-playfair)', fontWeight: 400 }}
+            >
+              {current}
+            </div>
+            <div className="text-xs text-[#C4B5A5] mt-0.5">/ {target} kcal</div>
+            <div
+              className="mt-1 text-sm text-[#D95959] tabular-nums"
+              style={{ fontFamily: 'var(--font-zcool-xiaowei)' }}
+            >
+              剩余 {Math.max(target - current, 0)}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

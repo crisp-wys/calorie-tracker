@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Settings, Plus } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
 import { calcAvgCalories, getLocalDateString } from '@/lib/utils';
 import { calcDynamicTarget } from '@/lib/tdee';
@@ -122,7 +122,7 @@ export default function CalendarPage() {
             🔥 运动消耗 {selectedWorkoutCals} kcal · 目标已调整
           </div>
         )}
-        <div className={`mt-1 text-sm ${isOver ? 'text-red-500' : 'text-brand'}`}>
+        <div className={`mt-1 text-sm ${isOver ? 'text-red-500' : 'text-[#D95959]'}`}>
           {selectedCalories === 0
             ? selected === todayStr
               ? '暂无记录'
@@ -131,6 +131,16 @@ export default function CalendarPage() {
             ? `超出 ${selectedCalories - target} kcal`
             : '未超标'}
         </div>
+
+        {/* Backfill entry for past dates */}
+        {selected !== todayStr && (
+          <button
+            onClick={() => router.push(`/camera?date=${selected}`)}
+            className="mt-3 w-full flex items-center justify-center gap-1.5 rounded-xl bg-[#D95959]/10 py-2.5 text-sm font-medium text-[#D95959] hover:bg-[#D95959]/20 transition-colors"
+          >
+            <Plus className="h-4 w-4" /> 补录食物到此日期
+          </button>
+        )}
       </div>
     </div>
   );

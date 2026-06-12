@@ -1,6 +1,8 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { Settings } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
 import { MEAL_ORDER } from '@/lib/types';
 import { calcAvgCalories, getLocalDateString } from '@/lib/utils';
@@ -17,6 +19,9 @@ import CalorieTrend from '@/components/CalorieTrend';
 export default function DashboardPage() {
   const { state, loading, loadError } = useApp();
   const { profile, meals } = state;
+  const router = useRouter();
+
+  const isFirstDay = meals.length === 0;
 
   // Show loading spinner while fetching from Supabase
   if (loading) {
@@ -103,7 +108,27 @@ export default function DashboardPage() {
 
   return (
     <div className="px-4 pt-6 pb-4 space-y-4">
-      <h1 className="text-sm text-gray-400 tracking-wide">{dateStr}</h1>
+      {/* Header row */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-sm text-gray-400 tracking-wide">{dateStr}</h1>
+        <button
+          onClick={() => router.push('/calendar/settings')}
+          className="h-8 w-8 rounded-xl bg-[#FAF6F0] border border-[#E8DDD0] flex items-center justify-center text-[#C4B5A5] hover:text-[#D95959] hover:border-[#D95959]/30 transition-colors"
+          aria-label="设置"
+        >
+          <Settings className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* First-day guidance */}
+      {isFirstDay && (
+        <div className="rounded-xl bg-gradient-to-r from-[#D95959]/8 to-[#E8B86D]/10 border border-[#D95959]/15 px-4 py-3">
+          <p className="text-sm font-semibold text-[#3D3226] mb-1">👋 开始记录你的第一天吧！</p>
+          <p className="text-xs text-[#8A7B6B]">
+            点击下方餐段的 <span className="font-medium text-[#D95959]">快速添加</span> 或 📷 拍照识别来记录第一餐
+          </p>
+        </div>
+      )}
 
       {loadError && profile && (
         <div className="rounded-xl bg-yellow-50 border border-yellow-200 px-4 py-2.5 text-xs text-yellow-700">
@@ -121,7 +146,7 @@ export default function DashboardPage() {
       <CalorieTrend />
 
       <div className="flex justify-center pt-2 pb-2">
-        <RingProgress current={roundedCalories} target={dailyTarget} />
+        <RingProgress current={roundedCalories} target={dailyTarget} isEmpty={todayMeals.length === 0} />
       </div>
 
       <div className="rounded-2xl bg-[#FFFBF6] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">

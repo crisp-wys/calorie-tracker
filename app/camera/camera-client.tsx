@@ -42,6 +42,10 @@ export default function CameraClient() {
     return suggestMealType();
   });
 
+  // Accept date param for backfill from calendar
+  const dateParam = searchParams.get('date');
+  const recordDate = dateParam || getLocalDateString();
+
   const [manualForm, setManualForm] = useState<{
     name: string; weight: number; calories: number;
     protein: number; carbs: number; fat: number;
@@ -139,7 +143,7 @@ export default function CameraClient() {
     if (!resultFoods || resultFoods.length === 0) return;
 
     const totals = calcTotals(resultFoods);
-    const date = getLocalDateString();
+    const date = recordDate;
     const meal = {
       id: generateId(),
       date,
